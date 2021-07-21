@@ -224,7 +224,8 @@ chaincodeInvoke() {
         -C $CHANNEL_NAME -n ${CC_NAME}  \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA   \
-        -c '{"function": "CreateCSP","Args":["{\"name\":\"airtel_US\",\"region\":\"Andhra Pradesh\",\"overageRate\":1.50,\"roamingRate\":1.00, \"latitude\":\"106.7\",\"longitude\":\"104.6\",\"Doc_type\":\"CSP\"}"]}'
+        -c '{"function": "createCar","Args":["{\"id\":\"1\",\"make\":\"Audi\",\"addedAt\":1600138309939,\"model\":\"R8\", \"color\":\"red\",\"owner\":\"pavan\"}"]}'
+
 }
 
 # chaincodeInvoke
@@ -241,13 +242,14 @@ chaincodeInvokeDeleteAsset() {
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA   \
         -c '{"function": "DeleteCarById","Args":["2"]}'
+
 }
 
 # chaincodeInvokeDeleteAsset
 
 chaincodeQuery() {
     setGlobalsForPeer0Org1
-    peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "ReadCSPData","Args":["airtel_US"]}'
+    peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "GetCarById","Args":["1"]}'
 }
 
 # chaincodeQuery

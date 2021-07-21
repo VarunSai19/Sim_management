@@ -20,14 +20,14 @@ var logger = flogging.MustGetLogger("fabcar_cc")
 type CallDetails struct{
 	callBegin time.Time `json:"callBegin"`
 	callEnd   time.Time `json:"callEnd"`
-	callCharges  float32 `json:"callCharges"`
+	callCharges  float64 `json:"callCharges"`
 }
 
 type CSPData struct{
 	name string `json:"name"`
 	region   string `json:"region"`
-	overageRate float32 `json:"overageRate"`
-	roamingRate  float32 `json:"roamingRate"`
+	overageRate float64 `json:"overageRate"`
+	roamingRate  float64 `json:"roamingRate"`
 	latitude string `json:"latitude"`
 	longitude string `json:"longitude"`
 	Doc_type string `json:"Doc_type"`
@@ -43,11 +43,11 @@ type SimData struct{
 	location   string `json:"location"`
 	longitude   string `json:"longitude"`
 	latitude   string `json:"latitude"`
-	roamingRate  float32 `json:"roamingRate"`
-	overageRate  float32 `json:"overageRate"`	
+	roamingRate  float64 `json:"roamingRate"`
+	overageRate  float64 `json:"overageRate"`	
 	callDetails   []CallDetails `json:"callDetails"`
 	isValid   string `json:"isValid"`
-	overageThreshold   float32 `json:"overageThreshold"`
+	overageThreshold   float64 `json:"overageThreshold"`
 	overageFlag   string `json:"overageFlag"`
 	allowOverage string `json:"allowOverage"`
 	Doc_type string `json:"Doc_type"`
@@ -139,7 +139,10 @@ func (s *SmartContract) checkForFraud(ctx contractapi.TransactionContextInterfac
 	if !exist {
 		return false,fmt.Errorf("Sim doesnt exist")
 	}
-	data := s.ReadSimData(simpublickey)
+	data,err := s.ReadSimData(ctx,simpublickey)
+	if err!=nil {
+		return false,fmt.Errorf("Error while reading sim data")
+	}
 	if data.isValid == "fraud" {
 		return true,nil
 	}
@@ -199,8 +202,8 @@ func (s *SmartContract) CreateSubscriberSim(ctx contractapi.TransactionContextIn
 	data.latitude = csp_data.latitude
 	data.longitude = csp_data.longitude
 
-	if data.RoamingPartnerName {
-		exist = s.assetExist(ctx,data.RoamingPartnerName)
+	if len(data.roamingPartnerName) != 0 {
+		exist = s.assetExist(ctx,data.roamingPartnerName)
 		if !exist {
 			return "",fmt.Errorf("Roaming Partner doesnt exist.")
 		}
@@ -225,7 +228,7 @@ func (s *SmartContract) UpdateCSP(ctx contractapi.TransactionContextInterface, D
 		return fmt.Errorf("Failed while unmarshling Data. %s", err.Error())
 	}
 
-	exist := s.assetExist(ctx,newData.name)
+	exist := s.assetExist(ctx,newdata.name)
 	if !exist {
 		fmt.Errorf("CSP data does not exist.")
 	}
@@ -243,23 +246,26 @@ func (s *SmartContract) DeleteCSP(ctx contractapi.TransactionContextInterface, I
 		return fmt.Errorf("Please pass the correct data")
 	}
 
-	exist := s.assetExist(ctx,Id)
+	exist:= s.assetExist(ctx,Id)
 	if !exist {
 		return fmt.Errorf("CSP doesnt exist.")
 	}
 
-	data := s.ReadSimData(ctx,Id)
+	data,err := s.ReadCSPData(ctx,Id)
+	if err != nil {
+		return fmt.Errorf("CSP doesnt exist.")
+	}
 	if data.Doc_type != "CSP"{
 		return fmt.Errorf("CSP doesnt exist.")
 	}
 
-	AllCSP_simData,err = s.findAllSubscriberSimsForCSP(ctx,Id)
+	AllCSP_simData,err := s.findAllSubscriberSimsForCSP(ctx,Id)
 
 	if len(AllCSP_simData) > 0 {
 		return fmt.Errorf("The CSP can not be deleted as the following sims are currently in its network")
 	}
 
-	return ctx.GetStub().DelState(data.publicKey)
+	return ctx.GetStub().DelState(Id)
 }
 
 func (s *SmartContract) UpdateSubscriberSim(ctx contractapi.TransactionContextInterface, Data string) error {
@@ -283,8 +289,8 @@ func (s *SmartContract) UpdateSubscriberSim(ctx contractapi.TransactionContextIn
 		return fmt.Errorf("Home operator doesnt exist.")
 	}
 
-	if data.RoamingPartnerName {
-		exist = s.assetExist(ctx,data.RoamingPartnerName)
+	if len(data.roamingPartnerName) != 0 {
+		exist = s.assetExist(ctx,data.roamingPartnerName)
 		if !exist {
 			return fmt.Errorf("Roaming Partner doesnt exist.")
 		}
@@ -309,7 +315,10 @@ func (s *SmartContract) DeleteSubscriberSim(ctx contractapi.TransactionContextIn
 		return fmt.Errorf("public key doesnt exist.")
 	}
 
-	data := s.ReadSimData(ctx,Id)
+	data,err := s.ReadSimData(ctx,Id)
+	if err != nil {
+		return fmt.Errorf("public key doesnt exist.")
+	}
 	if data.Doc_type != "SubscriberSim"{
 		return fmt.Errorf("public key doesnt exist.")
 	}
@@ -326,7 +335,7 @@ func (s *SmartContract) MoveSim(ctx contractapi.TransactionContextInterface, pub
 		return fmt.Errorf("public key doesnt exist.")
 	}
 
-	data,err := s.ReadSimData(ctc,publicKey)
+	data,err := s.ReadSimData(ctx,publicKey)
 	if err != nil {
 		fmt.Errorf("Error while reading the asset.")
 	}
@@ -353,8 +362,7 @@ func (s *SmartContract) UpdateRate(ctx contractapi.TransactionContextInterface, 
 		fmt.Errorf("Sim does not exist.")
 	}
 
-	data,err := s.ReadSimData(publicKey)
-
+	data,err := s.ReadSimData(ctx,publicKey)
 	if err != nil {
 		fmt.Errorf("Error while reading the asset.")
 	}
@@ -363,24 +371,29 @@ func (s *SmartContract) UpdateRate(ctx contractapi.TransactionContextInterface, 
 		fmt.Errorf("The user public key is marked as as fraudulent because the msisdn specified by this user is already in use. No calls can be made by this user.");
 	}
 
-	if data.homeOperatorName == RoamingPartnerName && data.isRoaming == true {
+	if data.homeOperatorName == RoamingPartnerName && data.isRoaming == "true" {
 		roamingData,err := s.ReadCSPData(ctx,RoamingPartnerName)
-		data.roamingPartnerName = ''
-		data.isRoaming = false
+		if err != nil {
+			fmt.Errorf("Error while reading the asset.")
+		}
+		data.roamingPartnerName = ""
+		data.isRoaming = "false"
 		data.roamingRate = 0
 		data.overageRate = 0
 		data.latitude = roamingData.latitude
 		data.longitude = roamingData.longitude
-	}
-	else if data.homeOperatorName != RoamingPartnerName{
+	} else if data.homeOperatorName != RoamingPartnerName {
 		exist = s.assetExist(ctx,RoamingPartnerName)
 		if !exist {
 			fmt.Errorf("Roaming partner does not exist.")
 		}
 
 		roamingData,err := s.ReadCSPData(ctx,RoamingPartnerName)
+		if err != nil {
+			fmt.Errorf("Error while reading the asset.")
+		}
 		data.roamingPartnerName = roamingData.name
-		data.isRoaming = true
+		data.isRoaming = "true"
 		data.roamingRate = roamingData.roamingRate
 		data.overageRate = roamingData.overageRate
 		data.latitude = roamingData.latitude
@@ -389,64 +402,73 @@ func (s *SmartContract) UpdateRate(ctx contractapi.TransactionContextInterface, 
 
 	dataAsBytes, err := json.Marshal(data)
 	if err != nil {
-		return "", fmt.Errorf("Failed while marshling Data. %s", err.Error())
+		return fmt.Errorf("Failed while marshling Data. %s", err.Error())
 	}
 
 	return ctx.GetStub().PutState(data.publicKey, dataAsBytes)
 }
 
 func (s *SmartContract) discovery(ctx contractapi.TransactionContextInterface, publicKey string) (string,error) {
-	exist := s.assetExist(ctx,data.publicKey)
+	exist := s.assetExist(ctx,publicKey)
 	if !exist {
-		return fmt.Errorf("public key does not already exist.")
+		return "",fmt.Errorf("public key does not already exist.")
 	}
 
-	simdata,err = s.ReadSimData(ctx,publicKey)
+	simdata,err := s.ReadSimData(ctx,publicKey)
+	if err != nil {
+		fmt.Errorf("Error while reading the asset.")
+	}
 
-	exist = s.assetExist(ctx,data.homeOperatorName)
+	exist = s.assetExist(ctx,simdata.homeOperatorName)
 
 	if !exist {
-		return fmt.Errorf("Home operator doesnt exist.")
+		return "",fmt.Errorf("Home operator doesnt exist.")
 	}
-	var operator
-	Homedata,err := s.ReadCSPData(ctx,data.homeOperatorName)
+	var operator string
+
+	Homedata,err := s.ReadCSPData(ctx,simdata.homeOperatorName)
+	if err != nil {
+		fmt.Errorf("Error while reading the asset.")
+	}
 	if Homedata.region != simdata.location {
 		queryString := fmt.Sprintf(`{"selector":{"Doc_type":"CSP","region":"%s"}}`,simdata.location)
-		operators,err := s.getQueryResultSimData(ctc,queryString)
+		operators,err := s.getQueryResultData(ctx,queryString)
+		if err != nil {
+			fmt.Errorf("Error while querying the data.")
+		}
 		if len(operators) == 0 {
-			fmt.Errorf("No operators found for the location.")
+			return "",fmt.Errorf("No operators found for the location.")
+		} else {
+			operator = operators[0].name
 		}
-		else {
-			operator = operators[0]
-		}
-		
-	}
-	else{
-		operator = data.homeOperatorName
+	} else{
+		operator = simdata.homeOperatorName
 	}
 	return operator,nil
 }
 
 func (s *SmartContract) authentication(ctx contractapi.TransactionContextInterface, publicKey string) error {
-	exist := s.assetExist(ctx,data.publicKey)
+	exist := s.assetExist(ctx,publicKey)
 	if !exist {
 		return fmt.Errorf("public key does not exist.")
 	}
 
-	simdata,err = s.ReadSimData(ctx,publicKey)
+	simdata,err := s.ReadSimData(ctx,publicKey)
+	if err != nil {
+		fmt.Errorf("Error while reading the asset.")
+	}
 	// Checking for Sim Cloning and we are assigning it as Fraud. 
 	queryString := fmt.Sprintf(`{"selector":{"Doc_type":"SubscriberSim","isValid":"active","publicKey":{"$nin":["%s"]},"msisdn":"%s"}}`,publicKey,simdata.msisdn)
-	queryRes,err := s.getQueryResultSimData(ctc,queryString)
-	var valid
+	queryRes,err := s.getQueryResultSimData(ctx,queryString)
+	var valid string
 	if len(queryRes) > 0 {
 		valid = "fraud"
-	}
-	else{
+	} else{
 		valid = "active"
 	}
 	if simdata.isValid != valid{
 		simdata.isValid = valid
-		dataAsBytes, err := json.Marshal(data)
+		dataAsBytes, err := json.Marshal(simdata)
 		if err != nil {
 			return fmt.Errorf("Failed while marshling Data. %s", err.Error())
 		}
@@ -467,7 +489,7 @@ func (s *SmartContract) VerifyUser(ctx contractapi.TransactionContextInterface, 
 		return "","",fmt.Errorf("This is a fraud sim.")
 	}
 
-	return s.checkForOverage(ctc,publicKey)
+	return s.checkForOverage(ctx,publicKey)
 }
 
 func (s *SmartContract) checkForOverage(ctx contractapi.TransactionContextInterface, publicKey string) (string,string,error) {
@@ -476,13 +498,17 @@ func (s *SmartContract) checkForOverage(ctx contractapi.TransactionContextInterf
 		return "","",fmt.Errorf("public key does not already exist.")
 	}
 
-	simdata,err = s.ReadSimData(ctx,publicKey)
+	simdata,err := s.ReadSimData(ctx,publicKey)
+	if err != nil {
+		fmt.Errorf("Error while reading the asset.")
+	}
 	if simdata.overageFlag == "true" {
-		return asset.overageFlag, asset.allowOverage,nil;
+		return simdata.overageFlag, simdata.allowOverage,nil;
 	}
 
-	var calldetails = simdata.CallDetails
-	var total_charge = 0
+	var calldetails = simdata.callDetails
+	var total_charge float64
+	total_charge = 0.0
 
 	for _,calldetail := range calldetails {
 		total_charge += calldetail.callCharges
@@ -491,11 +517,10 @@ func (s *SmartContract) checkForOverage(ctx contractapi.TransactionContextInterf
 		simdata.overageFlag = "true"
 		dataAsBytes, err := json.Marshal(simdata)
 		if err != nil {
-			return fmt.Errorf("Failed while marshling Data. %s", err.Error())
+			return "","",fmt.Errorf("Failed while marshling Data. %s", err.Error())
 		}
 		return "true",simdata.allowOverage,ctx.GetStub().PutState(simdata.publicKey, dataAsBytes)
-	}
-	else{
+	} else{
 		return simdata.overageFlag, simdata.allowOverage,nil
 	}
 	
@@ -508,9 +533,11 @@ func (s *SmartContract) setOverageFlag(ctx contractapi.TransactionContextInterfa
 		return fmt.Errorf("public key does not already exist.")
 	}
 
-	simdata,err = s.ReadSimData(ctx,publicKey)
-
-	if simdata.overageFlag == "true" && simdata.allowOverage == '' {
+	simdata,err := s.ReadSimData(ctx,publicKey)
+	if err != nil {
+		fmt.Errorf("Error while reading the asset.")
+	}
+	if simdata.overageFlag == "true" && simdata.allowOverage == "" {
 		simdata.allowOverage = allowOverage
 		dataAsBytes, err := json.Marshal(simdata)
 		if err != nil {
@@ -527,18 +554,18 @@ func (s *SmartContract) callOut(ctx contractapi.TransactionContextInterface, pub
 		return fmt.Errorf("public key does not already exist.")
 	}
 
-	simdata,err = s.ReadSimData(ctx,publicKey)
+	simdata,err := s.ReadSimData(ctx,publicKey)
 
 	if simdata.overageFlag == "true" && simdata.allowOverage == "false" {
 		return fmt.Errorf("No further calls will be allowed as the user has reached the overage threshold and has denied the overage charges.")
 	}	
-
+	
 	now := time.Now()
 	var calldetail = new(CallDetails)
 	calldetail.callBegin = now
 	calldetail.callEnd = now.Add(time.Duration(-1) * time.Minute)
 	calldetail.callCharges = 0
-	list = append(list,*calldetail)
+	simdata.callDetails = append(simdata.callDetails,*calldetail)
 	// time.Unix(time.Now().Unix(),0)
 
 	dataAsBytes, err := json.Marshal(simdata)
@@ -554,14 +581,14 @@ func (s *SmartContract) callEnd(ctx contractapi.TransactionContextInterface, pub
 		return fmt.Errorf("public key does not already exist.")
 	}
 
-	simdata,err = s.ReadSimData(ctx,publicKey)
+	simdata,err := s.ReadSimData(ctx,publicKey)
 	
 	if simdata.isValid == "fraud" {
 		return fmt.Errorf("This user has been marked as fraudulent because the msisdn specified by this user is already in use. No calls can be made by this user.")
 	}
 
-	last_index := len(simdata.CallDetails)-1
-	calldetail := simdata.CallDetails[last_index]
+	last_index := len(simdata.callDetails)-1
+	calldetail := simdata.callDetails[last_index]
 	begin := calldetail.callBegin
 	end := calldetail.callEnd
 
@@ -569,7 +596,7 @@ func (s *SmartContract) callEnd(ctx contractapi.TransactionContextInterface, pub
 		fmt.Errorf("No ongoing call for the user was found. Can not continue with callEnd process.")
 	}
 	// time.Unix(time.Now().Unix(),0)
-	simdata.CallDetails[last_index].callEnd = time.Now()
+	simdata.callDetails[last_index].callEnd = time.Now()
 	dataAsBytes, err := json.Marshal(simdata)
 	if err != nil {
 		return fmt.Errorf("Failed while marshling Data. %s", err.Error())
@@ -583,22 +610,21 @@ func (s *SmartContract) callPay(ctx contractapi.TransactionContextInterface, pub
 		return fmt.Errorf("public key does not already exist.")
 	}
 
-	simdata,err = s.ReadSimData(ctx,publicKey)
-	var rate
-	if simdata.overageFlag === "true" {
+	simdata,err := s.ReadSimData(ctx,publicKey)
+	var rate float64
+	if simdata.overageFlag == "true" {
 		rate = simdata.overageRate
-	}
-	else{
+	} else{
 		rate = simdata.roamingRate
 	}
 
-	last_index := len(simdata.CallDetails)-1
-	calldetail := simdata.CallDetails[last_index]
+	last_index := len(simdata.callDetails)-1
+	calldetail := simdata.callDetails[last_index]
 	begin := calldetail.callBegin
 	end := calldetail.callEnd
-
-	duration := end.Sub(begin).Minutes()
-	simdata.CallDetails[last_index].callCharges = duration*rate
+	var duration float64
+	duration = end.Sub(begin).Minutes()
+	simdata.callDetails[last_index].callCharges = duration*rate
 	dataAsBytes, err := json.Marshal(simdata)
 	if err != nil {
 		return fmt.Errorf("Failed while marshling Data. %s", err.Error())
@@ -764,6 +790,7 @@ func (s *SmartContract) findAllSubscriberSimsForCSP(ctx contractapi.TransactionC
 }
 
 
+
 func (s *SmartContract) CreateCar(ctx contractapi.TransactionContextInterface, carData string) (string, error) {
 
 	if len(carData) == 0 {
@@ -851,6 +878,7 @@ func (s *SmartContract) DeleteCarById(ctx contractapi.TransactionContextInterfac
 
 	return ctx.GetStub().GetTxID(), ctx.GetStub().DelState(carID)
 }
+
 
 
 
