@@ -103,10 +103,11 @@ app.post('/CreateCSP', async function (req, res) {
         res.json(getErrorMessage('\'roamingRate\''));
         return;
     }
-    // name, region,overageRate,roamingRate
+    
     let response = await helper.Register(args["name"],"CSP");
+    console.log(response);
     let resp = await invoke.invokeTransaction("CreateCSP",args["name"],args)
-
+    console.log(resp);
     logger.debug('-- returned from registering the username %s for organization %s', username, orgName);
     if (response && typeof response !== 'string') {
         logger.debug('Successfully registered the username %s for organization %s', username, orgName);
@@ -135,6 +136,7 @@ app.post('/CreateCSP', async function (req, res) {
 app.get('/CSPlogin', async function (req, res) {
     res.render('Login',{title:"CSP Login"})
 });
+
 
 app.post('/CSPlogin', async function (req, res) {
     try{
@@ -255,7 +257,7 @@ app.post('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/movesim', async fu
     try{
         let username = req.params.username;
         let publicKey = req.params.publicKey; 
-        let new_loc = req.body.location
+        let new_loc = req.body.location;
         await invoke.invokeTransaction("MoveSim",publicKey,new_loc)
         console.log("Changing the location is done");
         let operator = await invoke.invokeTransaction("discovery",publicKey);
@@ -419,13 +421,22 @@ app.get('/user/:username/callout' ,async function (req,res){
     if(overageFlag === 'false' || (overageFlag === 'true' && allowOverage !== '')) {
         await invoke.invokeTransaction("setOverageFlag",publicKey,allowOverage);
         await invoke.invokeTransaction("callOut",publicKey);
-        res.render("");
+        
     }
     else{
         res.send("Accept the overage charges..")
     }
     res.render('display_all_services',{title:"History Data",message})
 });
+
+app.get('/user/:username/callend' ,async function (req,res){
+    let publicKey = req.params.publicKey; 
+
+    await invoke.invokeTransaction("callEnd",publicKey)
+    await invoke.invokeTransaction("callPay",publicKey)
+    res.render('display_all_services',{title:"History Data",message})
+});
+
 
 app.get('/admin/:username/GetIdentity', async function (req, res) {
     try{
