@@ -53,23 +53,6 @@ type SimData struct{
 	Doc_type string `json:"Doc_type"`
 }
 
-// type AadharData struct {
-// 	AadharNumber   string `json:"AadharNumber"`
-// 	Address    string `json:"Address"`
-// 	DateOfBirth   string `json:"DateOfBirth"`
-// 	Name   string `json:"Name"`
-// 	Gender   string `json:"Gender"`
-// }
-
-// type DrivingLicence struct {
-// 	LicenceNumber  string `json:"LicenceNumber"`
-// 	Address    string `json:"Address"`
-// 	DateOfBirth   string `json:"DateOfBirth"`
-// 	Name   string `json:"Name"`
-// 	Gender   string `json:"Gender"`
-// 	LicenceValidity   string `json:"LicenceValidity"`
-// }
-
 type Car struct {
 	ID      string `json:"id"`
 	Make    string `json:"make"`
@@ -878,8 +861,6 @@ func (s *SmartContract) DeleteCarById(ctx contractapi.TransactionContextInterfac
 
 	return ctx.GetStub().GetTxID(), ctx.GetStub().DelState(carID)
 }
-
-
 
 
 func main() {
