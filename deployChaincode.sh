@@ -206,7 +206,7 @@ chaincodeInvokeInit() {
         -C $CHANNEL_NAME -n ${CC_NAME} \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
-         --peerAddresses localhost:11051 --tlsRootCertFiles $PEER0_ORG3_CA \
+        --peerAddresses localhost:11051 --tlsRootCertFiles $PEER0_ORG3_CA \
         --isInit -c '{"Args":[]}'
 
 }
@@ -269,7 +269,7 @@ checkCommitReadyness
 commitChaincodeDefination
 queryCommitted
 chaincodeInvokeInit
-sleep 5
+sleep 2
 chaincodeInvoke
-sleep 3
+sleep 2
 chaincodeQuery
