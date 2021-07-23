@@ -37,14 +37,20 @@ const query = async (args, fcn, username, org_name) => {
         switch (fcn) {
             case "GetHistoryForAsset":
             case "GetCarById":
-            case "findAllSubscriberSimsForCSP": 
+            case "FindAllSubscriberSimsForCSP": 
                 console.log("=============")
                 result = await contract.evaluateTransaction('SmartContract:'+fcn, args);
                 break;
+                
+            case "CheckForFraud":
+                result = await contract.evaluateTransaction('SmartContract:'+fcn, username);
+                return result;
+
             case "ReadCSPData":
             case "ReadSimData":
                 result = await contract.evaluateTransaction('SmartContract:'+fcn, username);
                 break;
+
             case "QueryAllSimData": 
                 var query_string = {"selector":{"Doc_type":"SubsciberSim"}}
                 result = await contract.evaluateTransaction('SmartContract:'+fcn, JSON.stringify(query_string));

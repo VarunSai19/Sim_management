@@ -71,64 +71,79 @@ app.get('/CreateCSP',async function (req, res) {
 
 // Register and enroll user
 app.post('/CreateCSP', async function (req, res) {
-    var args = {}
-    args["name"] = req.body.name;
-    args["region"] = req.body.region;
-    args["latitude"] = req.body.latitude;
-    args["longitude"] = req.body.longitude;
-    args["overageRate"] = req.body.overageRate;
-    args["roamingRate"] =  req.body.roamingRate;
-    args["Doc_type"] = "CSP"
-    var password = req.body.password;
-
-    logger.debug('End point : /register');
-    logger.debug('Name : ' + args["name"]);
-    logger.debug('region  : ' + args["region"]);
-    logger.debug('overageRate  : ' + args["overageRate"]);
-    logger.debug('roamingRate  : ' + args["roamingRate"]);
-
-    if (!args["name"]) {
-        res.json(getErrorMessage('\'name\''));
-        return;
-    }
-    if (!args["region"]) {
-        res.json(getErrorMessage('\'region\''));
-        return;
-    }
-    if (!args["overageRate"]) {
-        res.json(getErrorMessage('\'overageRate\''));
-        return;
-    }
-    if (!args["roamingRate"]) {
-        res.json(getErrorMessage('\'roamingRate\''));
-        return;
-    }
+    try{
+        var orgName = "org1"
+        let username = req.body.Name;
+        var args = {}
+        args["Name"] = req.body.Name;
+        args["Region"] = req.body.Region;
+        args["Latitude"] = req.body.Latitude;
+        args["Longitude"] = req.body.Longitude;
+        args["OverageRate"] = req.body.OverageRate;
+        args["RoamingRate"] =  req.body.RoamingRate;
+        args["Doc_type"] = "CSP"
+        var password = req.body.password;
     
-    let response = await helper.Register(args["name"],"CSP");
-    console.log(response);
-    let resp = await invoke.invokeTransaction("CreateCSP",args["name"],args)
-    console.log(resp);
-    logger.debug('-- returned from registering the username %s for organization %s', username, orgName);
-    if (response && typeof response !== 'string') {
-        logger.debug('Successfully registered the username %s for organization %s', username, orgName);
-        var pass_hash = SHA256(username+password+"CSP")
-        pass_hash = JSON.stringify(pass_hash["words"]);
-        console.log(pass_hash);
-        const pw_data = new PasswordHash({
-            username:username,
-            password_hash:pass_hash
-        });
-        pw_data.save().then((result) => {
-            console.log(result);
-            res.render('success',{username:username,title:"success"});
-        }).catch((err) => {
-            console.log(err);
-            res.render('failure',{username:username,title:"failed"});
-        });
+        logger.debug('End point : /register');
+        logger.debug('Name : ' + args["Name"]);
+        logger.debug('region  : ' + args["Region"]);
+        logger.debug('overageRate  : ' + args["OverageRate"]);
+        logger.debug('roamingRate  : ' + args["RoamingRate"]);
+    
+        if (!args["Name"]) {
+            res.json(getErrorMessage('\'name\''));
+            return;
+        }
+        if (!args["Region"]) {
+            res.json(getErrorMessage('\'region\''));
+            return;
+        }
+        if (!args["OverageRate"]) {
+            res.json(getErrorMessage('\'overageRate\''));
+            return;
+        }
+        if (!args["RoamingRate"]) {
+            res.json(getErrorMessage('\'roamingRate\''));
+            return;
+        }
         
-    } else {
-        logger.debug('Failed to register the username %s for organization %s with::%s', username, orgName, response);
-        res.render('failure',{username:username,title:"failed"})
+        let response = await helper.Register(args["Name"],"CSP");
+        console.log(response);
+        let resp = await invoke.invokeTransaction("CreateCSP",args["Name"],args)
+        console.log(resp);
+        logger.debug('-- returned from registering the username %s for organization %s', username, orgName);
+        if (response && typeof response !== 'string') {
+            logger.debug('Successfully registered the username %s for organization %s', username, orgName);
+            var pass_hash = SHA256(args["Name"]+password+"CSP")
+            pass_hash = JSON.stringify(pass_hash["words"]);
+            console.log(pass_hash);
+            const pw_data = new PasswordHash({
+                username:username,
+                password_hash:pass_hash
+            });
+            pw_data.save().then((result) => {
+                console.log(result);
+                res.send("success")
+                // res.render('success',{username:username,title:"success"});
+            }).catch((err) => {
+                console.log(err);
+                res.send("Falied")
+                // res.render('failure',{username:username,title:"failed"});
+            });
+            
+        } else {
+            logger.debug('Failed to register the username %s for organization %s with::%s', username, orgName, response);
+            // res.render('failure',{username:username,title:"failed"})
+            res.send("Falied")
+        }
+    }
+    catch (error) {
+        const response_payload = {
+            result: null,
+            error: error.name,
+            errorData: error.message
+        }
+        res.send(response_payload)
     }
 });
 
@@ -140,7 +155,7 @@ app.get('/CSPlogin', async function (req, res) {
 
 app.post('/CSPlogin', async function (req, res) {
     try{
-        var username = req.body.name;
+        var username = req.body.Name;
         const user_present = await helper.isUserRegistered(username,"Org1")
         console.log(user_present);
         if(!user_present) 
@@ -215,7 +230,7 @@ app.get('/CSPAdmin/:username/info', async function (req, res) {
 
 app.get('/CSPAdmin/:username/GetAllSubscriberSims', async function (req, res) {
     let username = req.params.username;
-    let result = await query.query(username,"findAllSubscriberSimsForCSP",username,"Org1")
+    let result = await query.query(username,"FindAllSubscriberSimsForCSP",username,"Org1")
     res.send(result);
     // res.render('number_queries',{title:"Get Data",username,result});
 });
@@ -223,33 +238,38 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims', async function (req, res) {
 app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey', async function (req, res) {
     let username = req.params.username;
     let publicKey = req.params.publicKey;    
-    res.render('display',{title:"Info",username,publicKey})
+    res.send("Public key")
+    // res.render('display',{title:"Info",username,publicKey})
 });
 
 app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/info', async function (req, res) {
     let username = req.params.username;
     let publicKey = req.params.publicKey; 
     let message = await query.query(publicKey,"ReadSimData",publicKey,"Org2");
-    res.render('display_all_services',{title:"Sim Data",message})
+    res.send(result);
+    // res.render('display_all_services',{title:"Sim Data",message})
 });
 
 app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/history', async function (req, res) {
     let username = req.params.username;
     let publicKey = req.params.publicKey; 
     let message = await query.query(publicKey,"GetHistoryForAsset",publicKey,"Org2");
-    res.render('display_all_services',{title:"History Data",message})
+    res.send(result);
+    // res.render('display_all_services',{title:"History Data",message})
 });
 
 app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/calldetails', async function (req, res) {
     let username = req.params.username;
     let publicKey = req.params.publicKey; 
     let message = await query.query(publicKey,"ReadSimData",publicKey,"Org2");
-    res.render('display_all_transactions',{title:"Transaction Data",message})
+    res.send(result);
+    // res.render('display_all_transactions',{title:"Transaction Data",message})
 });
 
 app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/movesim', async function (req, res) {
     let username = req.params.username;
     let publicKey = req.params.publicKey; 
+    
     res.render('display_all_transactions',{title:"Move sim",username,publicKey})
 });
 
@@ -258,17 +278,20 @@ app.post('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/movesim', async fu
         let username = req.params.username;
         let publicKey = req.params.publicKey; 
         let new_loc = req.body.location;
+        console.log(username);
+        console.log(publicKey);
+        console.log(new_loc);
         await invoke.invokeTransaction("MoveSim",publicKey,new_loc)
         console.log("Changing the location is done");
-        let operator = await invoke.invokeTransaction("discovery",publicKey);
+        let operator = await invoke.invokeTransaction("Discovery",publicKey);
         console.log("Discovery is done");
         console.log(operator);
-        await invoke.invokeTransaction("authentication",publicKey)
+        await invoke.invokeTransaction("Authentication",publicKey)
         console.log("Authentication is done");
         await invoke.invokeTransaction("UpdateRate",publicKey,operator)
         console.log("UpdateRate is done");
         var url_resp = `/CSPAdmin/${username}/GetAllSubscriberSims/${publicKey}/`
-        res.redirect(url_resp)
+        res.send("Success")
     }
     catch(error)
     {
@@ -291,29 +314,35 @@ app.post('/createSubscriberSim' ,async function (req,res){
     try{
         var password = req.body.password;
         var args = {};
-        args["publicKey"] = req.params.publicKey;
-        args["address"] = req.body.address;
-        args["msisdn"] = req.body.msisdn;
-        args["homeOperatorName"] = req.body.homeOperatorName;
-        args["isRoaming"] = "false";
-        args["overageThreshold"] = 5;
+        args["PublicKey"] = req.body.PublicKey;
+        args["Address"] = req.body.Address;
+        args["Msisdn"] = req.body.Msisdn;
+        args["HomeOperatorName"] = req.body.HomeOperatorName;
+        args["IsRoaming"] = "false";
+        args["OverageThreshold"] = 3;
         args["Doc_type"] = "SubscriberSim"
 
-        let response = await helper.Register(args["publicKey"],"SubscriberSim");
+        console.log(args["PublicKey"]);
+        console.log(args["Address"]);
+        console.log(args["Msisdn"]);
+        console.log(args["HomeOperatorName"]);
+        console.log(args["Doc_type"]);
+
+        let response = await helper.Register(args["PublicKey"],"SubscriberSim");
         console.log(response);
         console.log("User created...")
 
-        let message = await invoke.invokeTransaction("CreateSubscriberSim",args["publicKey"],args);
+        let message = await invoke.invokeTransaction("CreateSubscriberSim",args["PublicKey"],args);
         console.log(message);
         console.log(`message result is : ${message}`)
 
-        await invoke.invokeTransaction("authentication",args["publicKey"])
+        await invoke.invokeTransaction("Authentication",args["PublicKey"])
 
-        var pass_hash = SHA256(args["publicKey"]+password+args["Doc_type"])
+        var pass_hash = SHA256(args["PublicKey"]+password+args["Doc_type"])
         pass_hash = JSON.stringify(pass_hash["words"]);
         console.log(pass_hash);
         const pw_data = new PasswordHash({
-            username:username,
+            username:args["PublicKey"],
             password_hash:pass_hash
         });
         pw_data.save().then((result) => {
@@ -322,7 +351,7 @@ app.post('/createSubscriberSim' ,async function (req,res){
             console.log(err);
         });
             
-        res.redirect('/'); 
+        res.send("Registration done.."); 
     }
     catch(error)
     {
@@ -340,7 +369,7 @@ app.get('/Userlogin', async function (req, res) {
 });
 
 app.post('/Userlogin', async function (req, res) {
-    var username = req.body.publicKey;
+    var username = req.body.PublicKey;
     const user_present = await helper.isUserRegistered(username,"Org2")
     if(!user_present) 
     {
@@ -390,51 +419,75 @@ app.get('/user/:username' ,async function (req,res){
     res.render('user_page',{title:"User",number})
 });
 
-app.get('/user/:username/info' ,async function (req,res){
+app.get('/user/:publicKey/info' ,async function (req,res){
     let publicKey = req.params.publicKey; 
+    console.log(publicKey);
     let message = await query.query(publicKey,"ReadSimData",publicKey,"Org2");
     res.send(message);
     // res.render('display_all_services',{title:"Sim Data",message})
 });
 
-app.get('/user/:username/calldetails' ,async function (req,res){
+app.get('/user/:publicKey/calldetails' ,async function (req,res){
     let publicKey = req.params.publicKey; 
     let message = await query.query(publicKey,"ReadSimData",publicKey,"Org2");
     res.send(message)
     // res.render('display_all_transactions',{title:"Transaction Data",message})
 });
 
-app.get('/user/:username/simhistory' ,async function (req,res){
+app.get('/user/:publicKey/simhistory' ,async function (req,res){
     let publicKey = req.params.publicKey; 
     let message = await query.query(publicKey,"GetHistoryForAsset",publicKey,"Org2");
     res.send(message)
     // res.render('display_all_services',{title:"History Data",message})
 });
 
-app.get('/user/:username/callout' ,async function (req,res){
-    let publicKey = req.params.publicKey; 
-    let overageFlag
-    let allowOverage
-
-    overageFlag,allowOverage = await invoke.invokeTransaction("VerifyUser",publicKey);
-
-    if(overageFlag === 'false' || (overageFlag === 'true' && allowOverage !== '')) {
-        await invoke.invokeTransaction("setOverageFlag",publicKey,allowOverage);
-        await invoke.invokeTransaction("callOut",publicKey);
-        
+app.get('/user/:publicKey/callout' ,async function (req,res){
+    try{
+        let publicKey = req.params.publicKey; 
+        let overageFlag
+        let allowOverage
+        let is_fraud
+        console.log(publicKey);
+        is_fraud = await query.query("","CheckForFraud",publicKey,"Org2");
+        if(is_fraud === true){
+            res.send("The sim is fraud.")
+        }
+        console.log("Sim is not fraud");
+        overageFlag,allowOverage = await invoke.invokeTransaction("CheckForOverage",publicKey);
+        console.log(overageFlag);
+        console.log(allowOverage);
+        if(overageFlag === 'false' || (overageFlag === 'true' && allowOverage !== '')) {
+            await invoke.invokeTransaction("SetOverageFlag",publicKey,allowOverage);
+            console.log("Set Overage done");
+            await invoke.invokeTransaction("CallOut",publicKey);
+            console.log("Callout done");
+        }
+        else{
+            res.send("Accept the overage charges..")
+        }
+        res.send("CallEnd")
+        // res.render('display_all_services',{title:"History Data",message})
     }
-    else{
-        res.send("Accept the overage charges..")
+    catch(error)
+    {
+        const response_payload = {
+            result: null,
+            error: error.name,
+            errorData: error.message
+        }
+        res.send(response_payload)
     }
-    res.render('display_all_services',{title:"History Data",message})
 });
 
-app.get('/user/:username/callend' ,async function (req,res){
+app.get('/user/:publicKey/callend' ,async function (req,res){
     let publicKey = req.params.publicKey; 
+    await invoke.invokeTransaction("CallEnd",publicKey)
+    console.log("Call end done");
+    await invoke.invokeTransaction("CallPay",publicKey)
+    console.log("CAll pay done");
+    res.send("Call is stored.")
 
-    await invoke.invokeTransaction("callEnd",publicKey)
-    await invoke.invokeTransaction("callPay",publicKey)
-    res.render('display_all_services',{title:"History Data",message})
+    // res.render('display_all_services',{title:"History Data",message})
 });
 
 

@@ -56,27 +56,40 @@ const invokeTransaction = async (fcn,username,args) => {
         let response;
 
         switch (fcn) {
-            case "CreateCSP":
             case "UpdateCSP":
-            case "CreateSubscriberSim":
             case "UpdateSubscriberSim":
+            case "CreateSubscriberSim":
+            case "CreateCSP":
                 console.log(`User name is ${username}`)
                 console.log(JSON.stringify(args));
                 result = await contract.submitTransaction('SmartContract:'+fcn, JSON.stringify(args));
                 result = {txid: result.toString()}
                 break;
-
+        
             case "DeleteCSP":
             case "DeleteSubscriberSim":
-            case "discovery":
-            case "authentication":
-            case "VerifyUser":
+            case "Authentication":
+            case "CallOut":
+            case "CallEnd":
+            case "CallPay":
                 console.log(`User name is ${username}`)
                 await contract.submitTransaction('SmartContract:'+fcn,username);
                 return;
 
+            case "CheckForOverage":
+                console.log(`User name is ${username}`)
+                let lst = await contract.submitTransaction('SmartContract:'+fcn,username);
+                return lst[0],lst[1];
+
+            case "Discovery":
+                console.log(`User name is ${username}`)
+                let operator = await contract.submitTransaction('SmartContract:'+fcn,username);
+                console.log(`Operator found while discovery is ${operator}`);
+                return operator;
+
             case "MoveSim":
             case "UpdateRate":
+            case "SetOverageFlag":
                 console.log(`User name is ${username}`)
                 await contract.submitTransaction('SmartContract:'+fcn,username,args);
                 return;
