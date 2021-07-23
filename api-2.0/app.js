@@ -322,6 +322,7 @@ app.post('/createSubscriberSim' ,async function (req,res){
         args["OverageThreshold"] = 3;
         args["Doc_type"] = "SubscriberSim"
         args["OverageFlag"] = "false"
+        args["AllowOverage"] = "false"
 
         console.log(args["PublicKey"]);
         console.log(args["Address"]);
@@ -445,8 +446,6 @@ app.get('/user/:publicKey/simhistory' ,async function (req,res){
 app.get('/user/:publicKey/callout' ,async function (req,res){
     try{
         let publicKey = req.params.publicKey; 
-        let overageFlag
-        let allowOverage
         let is_fraud
         console.log(publicKey);
         is_fraud = await query.query("","CheckForFraud",publicKey,"Org2");
@@ -454,9 +453,21 @@ app.get('/user/:publicKey/callout' ,async function (req,res){
             res.send("The sim is fraud.")
         }
         console.log("Sim is not fraud");
-        overageFlag,allowOverage = await invoke.invokeTransaction("CheckForOverage",publicKey);
+        let result = await invoke.invokeTransaction("CheckForOverage",publicKey);
+
+        let overageFlag = "";
+        let allowOverage = "";
+        let i;
+        for(i=0;i<result.length;i++)
+            if(result[i] === "$") break;
+            else overageFlag += result[i];
+            
+        for(i=i+1;i<result.length;i++)
+            allowOverage += result[i];
+
         console.log(overageFlag);
         console.log(allowOverage);
+        
         if(overageFlag === 'false' || (overageFlag === 'true' && allowOverage !== '')) {
             await invoke.invokeTransaction("SetOverageFlag",publicKey,allowOverage);
             console.log("Set Overage done");

@@ -546,7 +546,7 @@ func (s *SmartContract) SetOverageFlag(ctx contractapi.TransactionContextInterfa
 	return nil	
 }
 
-func (s *SmartContract) CallOut(ctx contractapi.TransactionContextInterface, publicKey string) error {
+func (s *SmartContract) CallOut(ctx contractapi.TransactionContextInterface, publicKey string,starttime int64) error {
 	exist := s.assetExist(ctx,publicKey)
 	if !exist {
 		return fmt.Errorf("public key does not already exist.")
@@ -558,13 +558,11 @@ func (s *SmartContract) CallOut(ctx contractapi.TransactionContextInterface, pub
 		return fmt.Errorf("No further calls will be allowed as the user has reached the overage threshold and has denied the overage charges.")
 	}	
 	
-	now := time.Now()
 	var calldetail = new(CallDetails)
-	calldetail.CallBegin = now
-	calldetail.CallEnd = now.Add(time.Duration(-1) * time.Minute)
+	calldetail.CallBegin = time.Unix(starttime,0)
+	calldetail.CallEnd = time.Unix(starttime-1,0)
 	calldetail.CallCharges = 0.0
 	simdata.CallDetails = append(simdata.CallDetails,*calldetail)
-	// time.Unix(time.Now().Unix(),0)
 
 	dataAsBytes, err := json.Marshal(simdata)
 	if err != nil {
@@ -573,7 +571,7 @@ func (s *SmartContract) CallOut(ctx contractapi.TransactionContextInterface, pub
 	return ctx.GetStub().PutState(simdata.PublicKey, dataAsBytes)
 }
 
-func (s *SmartContract) CallEnd(ctx contractapi.TransactionContextInterface, publicKey string) error {
+func (s *SmartContract) CallEnd(ctx contractapi.TransactionContextInterface, publicKey string,endtime int64) error {
 	exist := s.assetExist(ctx,publicKey)
 	if !exist {
 		return fmt.Errorf("public key does not already exist.")
@@ -594,7 +592,7 @@ func (s *SmartContract) CallEnd(ctx contractapi.TransactionContextInterface, pub
 		fmt.Errorf("No ongoing call for the user was found. Can not continue with callEnd process.")
 	}
 	// time.Unix(time.Now().Unix(),0)
-	simdata.CallDetails[last_index].CallEnd = time.Now()
+	simdata.CallDetails[last_index].CallEnd = time.Unix(endtime,0)
 	dataAsBytes, err := json.Marshal(simdata)
 	if err != nil {
 		return fmt.Errorf("Failed while marshling Data. %s", err.Error())
