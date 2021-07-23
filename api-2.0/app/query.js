@@ -50,17 +50,7 @@ const query = async (args, fcn, username, org_name) => {
             case "ReadSimData":
                 result = await contract.evaluateTransaction('SmartContract:'+fcn, username);
                 break;
-
-            case "QueryAllSimData": 
-                var query_string = {"selector":{"Doc_type":"SubsciberSim"}}
-                result = await contract.evaluateTransaction('SmartContract:'+fcn, JSON.stringify(query_string));
-                break;
-
-            case "QueryAllCSP": 
-                var query_string = {"selector":{"Doc_type":"CSP"}}
-                result = await contract.evaluateTransaction('SmartContract:'+fcn, JSON.stringify(query_string));
-                break;    
-
+                
             case "GetSubmittingClientIdentity":
                 result = await contract.evaluateTransaction('SmartContract:'+fcn);
                 console.log(`Transaction has been evaluated, result is: ${result.toString()}`);

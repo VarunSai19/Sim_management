@@ -1,16 +1,5 @@
 package main
 
-// import (
-// 	"bytes"
-// 	"encoding/json"
-// 	"fmt"
-// 	"strconv"
-// 	"time"
-// 	"encoding/base64"
-// 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-// 	"github.com/hyperledger/fabric/common/flogging"
-// )
-
 import (
 	"bytes"
 	"encoding/json"
@@ -473,23 +462,6 @@ func (s *SmartContract) Authentication(ctx contractapi.TransactionContextInterfa
 }
 
 
-// func (s *SmartContract) VerifyUser(ctx contractapi.TransactionContextInterface, publicKey string) ([]string,error) {
-// 	exist := s.assetExist(ctx,publicKey)
-// 	if !exist {
-// 		return "","",fmt.Errorf("Sim doesnt exist")
-// 	}
-// 	is_fraud,err := s.checkForFraud(ctx,publicKey)
-// 	if err != nil {
-// 		return "","",fmt.Errorf("The sim doesnt exist with this public key.")
-// 	}
-
-// 	if is_fraud {
-// 		return "","",fmt.Errorf("This is a fraud sim.")
-// 	}
-
-// 	return s.checkForOverage(ctx,publicKey)
-// }
-
 func (s *SmartContract) CheckForOverage(ctx contractapi.TransactionContextInterface, publicKey string) (string,error) {
 	exist := s.assetExist(ctx,publicKey)
 	if !exist {
@@ -732,14 +704,6 @@ func (s *SmartContract) getQueryResultData(ctx contractapi.TransactionContextInt
 	return results, nil
 }
 
-// func (s *SmartContract) QueryAllCSP(ctx contractapi.TransactionContextInterface, queryString string) ([]CSPData, error) {
-// 	err := ctx.GetClientIdentity().AssertAttributeValue("usertype", "CSP")
-// 	if err != nil {
-// 		return nil,fmt.Errorf("submitting client not authorized to perform this task.")
-// 	}
-// 	return s.getQueryResultData(ctx,queryString)
-// }
-
 func (s *SmartContract) getQueryResultSimData(ctx contractapi.TransactionContextInterface, queryString string) ([]SimData, error) {
 
 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
@@ -764,15 +728,6 @@ func (s *SmartContract) getQueryResultSimData(ctx contractapi.TransactionContext
 	}
 	return results, nil
 }
-
-// func (s *SmartContract) QueryAllSimData(ctx contractapi.TransactionContextInterface, queryString string) ([]SimData, error) {
-// 	err := ctx.GetClientIdentity().AssertAttributeValue("usertype", "CSP")
-// 	if err != nil {
-// 		return nil,fmt.Errorf("submitting client not authorized to perform this task.")
-// 	}
-
-// 	return s.getQueryResultSimData(ctx,queryString)
-// }
 
 func (s *SmartContract) FindAllSubscriberSimsForCSP(ctx contractapi.TransactionContextInterface, csp_name string) ([]SimData, error) {
 	err := ctx.GetClientIdentity().AssertAttributeValue("usertype", "CSP")

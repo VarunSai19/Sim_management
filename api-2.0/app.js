@@ -69,7 +69,7 @@ app.get('/CreateCSP',async function (req, res) {
     res.render('register_CSP',{title:"Register"})
 });
 
-// Register and enroll user
+// Register and enroll CSP
 app.post('/CreateCSP', async function (req, res) {
     try{
         var orgName = "org1"
