@@ -78,8 +78,20 @@ const invokeTransaction = async (fcn,username,args) => {
 
             case "CheckForOverage":
                 console.log(`User name is ${username}`)
-                let lst = await contract.submitTransaction('SmartContract:'+fcn,username);
-                return lst[0],lst[1];
+                result = await contract.submitTransaction('SmartContract:'+fcn,username);
+                result = result.toString();
+
+                let overageFlag = "";
+                let allowOverage = "";
+                let i;
+                for(i=0;i<result.length;i++)
+                    if(result[i] === "$") break;
+                    else overageFlag += result[i];
+                    
+                for(i=i+1;i<result.length;i++)
+                    allowOverage += result[i];
+                    
+                return overageFlag,allowOverage;
 
             case "Discovery":
                 console.log(`User name is ${username}`)
@@ -97,24 +109,15 @@ const invokeTransaction = async (fcn,username,args) => {
             default:
                 break;
         }
-
         await gateway.disconnect();
-
-        // result = JSON.parse(result.toString());
-
         response = {
             message: message,
             result
         }
-
         return response;
-
-
     } catch (error) {
-
         console.log(`Getting error: ${error}`)
         return error.message
-
     }
 }
 

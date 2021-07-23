@@ -490,51 +490,37 @@ func (s *SmartContract) Authentication(ctx contractapi.TransactionContextInterfa
 // 	return s.checkForOverage(ctx,publicKey)
 // }
 
-func (s *SmartContract) CheckForOverage(ctx contractapi.TransactionContextInterface, publicKey string) ([]string,error) {
+func (s *SmartContract) CheckForOverage(ctx contractapi.TransactionContextInterface, publicKey string) (string,error) {
 	exist := s.assetExist(ctx,publicKey)
-	res := []string{}
 	if !exist {
-		res = append(res,"")
-		res = append(res,"")
-		return res,fmt.Errorf("public key does not already exist.")
+		return "",fmt.Errorf("public key does not already exist.")
 	}
 
 	simdata,err := s.ReadSimData(ctx,publicKey)
 	if err != nil {
-		res = append(res,"")
-		res = append(res,"")
-		return res,fmt.Errorf("Error while reading the asset.")
+		return "",fmt.Errorf("Error while reading the asset.")
 	}
 	if simdata.OverageFlag == "true" {
-		res = append(res,simdata.AllowOverage)
-		res = append(res,simdata.OverageFlag)
-		return res,nil;
+		return simdata.OverageFlag+"$"+simdata.AllowOverage,nil;
 	}
 
 	var calldetails = simdata.CallDetails
 	var total_charge float64
-	var temp float64
 	total_charge = 0.0
 
 	for _,calldetail := range calldetails {
-		total_charge += calldetail.CallCharge
+		total_charge += calldetail.CallCharges
 	}
 
 	if total_charge + simdata.RoamingRate > simdata.OverageThreshold {
 		simdata.OverageFlag = "true"
 		dataAsBytes, err := json.Marshal(simdata)
 		if err != nil {
-			res = append(res,"")
-			res = append(res,"")
-			return res,fmt.Errorf("Error while parsing.")
+			return "",fmt.Errorf("Error while parsing.")
 		}
-		res = append(res,simdata.AllowOverage)
-		res = append(res,"true")
-		return res,ctx.GetStub().PutState(simdata.PublicKey, dataAsBytes)
+		return simdata.OverageFlag+"$"+simdata.AllowOverage,ctx.GetStub().PutState(simdata.PublicKey, dataAsBytes)
 	} else{
-		res = append(res,simdata.AllowOverage)
-		res = append(res,simdata.OverageFlag)
-		return res,nil;
+		return simdata.OverageFlag+"$"+simdata.AllowOverage,nil;
 	}
 }
 

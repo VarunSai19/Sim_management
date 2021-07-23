@@ -246,7 +246,7 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/info', async functi
     let username = req.params.username;
     let publicKey = req.params.publicKey; 
     let message = await query.query(publicKey,"ReadSimData",publicKey,"Org2");
-    res.send(result);
+    res.send(message);
     // res.render('display_all_services',{title:"Sim Data",message})
 });
 
@@ -254,7 +254,7 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/history', async fun
     let username = req.params.username;
     let publicKey = req.params.publicKey; 
     let message = await query.query(publicKey,"GetHistoryForAsset",publicKey,"Org2");
-    res.send(result);
+    res.send(message);
     // res.render('display_all_services',{title:"History Data",message})
 });
 
@@ -262,7 +262,7 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/calldetails', async
     let username = req.params.username;
     let publicKey = req.params.publicKey; 
     let message = await query.query(publicKey,"ReadSimData",publicKey,"Org2");
-    res.send(result);
+    res.send(message);
     // res.render('display_all_transactions',{title:"Transaction Data",message})
 });
 
@@ -321,6 +321,7 @@ app.post('/createSubscriberSim' ,async function (req,res){
         args["IsRoaming"] = "false";
         args["OverageThreshold"] = 3;
         args["Doc_type"] = "SubscriberSim"
+        args["OverageFlag"] = "false"
 
         console.log(args["PublicKey"]);
         console.log(args["Address"]);
@@ -461,11 +462,12 @@ app.get('/user/:publicKey/callout' ,async function (req,res){
             console.log("Set Overage done");
             await invoke.invokeTransaction("CallOut",publicKey);
             console.log("Callout done");
+            res.send("CallEnd")
         }
         else{
             res.send("Accept the overage charges..")
         }
-        res.send("CallEnd")
+        
         // res.render('display_all_services',{title:"History Data",message})
     }
     catch(error)

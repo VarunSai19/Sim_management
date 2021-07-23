@@ -269,7 +269,7 @@ checkCommitReadyness
 commitChaincodeDefination
 queryCommitted
 chaincodeInvokeInit
-sleep 2
+sleep 5
 chaincodeInvoke
-sleep 2
+sleep 3
 chaincodeQuery
