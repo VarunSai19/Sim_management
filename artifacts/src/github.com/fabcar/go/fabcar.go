@@ -507,7 +507,7 @@ func (s *SmartContract) SetOverageFlag(ctx contractapi.TransactionContextInterfa
 	if err != nil {
 		fmt.Errorf("Error while reading the asset.")
 	}
-	if simdata.OverageFlag == "true" && simdata.AllowOverage == "" {
+	if simdata.OverageFlag == "true" && simdata.AllowOverage == "false" {
 		simdata.AllowOverage = allowOverage
 		dataAsBytes, err := json.Marshal(simdata)
 		if err != nil {

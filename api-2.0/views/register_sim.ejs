@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include('./partials/header.ejs')%>
+<body>
+  <h2>Subscriber Sim Details</h2>
+  <form method="POST">
+    <label for="PublicKey">PublicKey:</label><br>
+    <input type="text" id="PublicKey" name="PublicKey"><br>
+    <br>
+    <label for="Address">Address:</label><br>
+      <input type="text" id="Address" name="Address"><br>
+    <br>
+    
+    <label for="Msisdn">Msisdn:</label><br>
+      <input type="text" id="Msisdn" name="Msisdn"><br>
+    <br>
+
+    <label for="HomeOperatorName">HomeOperatorName:</label><br>
+      <input type="text" id="HomeOperatorName" name="HomeOperatorName"><br>
+    <br>
+
+    <input type="submit" value="Submit">
+  </form> 
+</body>
+</html>

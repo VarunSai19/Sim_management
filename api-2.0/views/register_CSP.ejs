@@ -1,32 +1,30 @@
 <!DOCTYPE html>
-<html>
-<head>
-<title>BlockChain | CSP page</title>
-</head>
+<html lang="en">
+    <%- include('./partials/header.ejs')%>
 <body>
   <h2>CSP Details</h2>
   <form method="POST">
     <label for="name">Name:</label><br>
-    <input type="text" id="name" name="name"><br>
+    <input type="text" id="name" name="Name"><br>
     <br>
-    <label for="anumber">Region:</label><br>
-      <input type="text" id="anumber" name="region"><br>
+    <label for="region">Region:</label><br>
+      <input type="text" id="region" name="Region"><br>
     <br>
     
-    <label for="dob">latitude:</label><br>
-      <input type="text" id="dob" name="latitude"><br>
+    <label for="latitude">latitude:</label><br>
+      <input type="text" id="latitude" name="Latitude"><br>
     <br>
 
-    <label for="long">longitude:</label><br>
-      <input type="text" id="long" name="longitude"><br>
+    <label for="longitude">longitude:</label><br>
+      <input type="text" id="longitude" name="Longitude"><br>
     <br>
 
-    <label for="overage">latitude:</label><br>
-      <input type="text" id="overage" name="overageRate"><br>
+    <label for="overage">overageRate:</label><br>
+      <input type="number" id="overage" name="OverageRate"><br>
     <br>
 
-    <label for="roaming">latitude:</label><br>
-      <input type="text" id="roaming" name="roamingRate"><br>
+    <label for="roaming">roamingRate:</label><br>
+      <input type="number" id="roaming" name="RoamingRate"><br>
     <br>
 
     <input type="submit" value="Submit">

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+ <%- include('./partials/header.ejs') %> 
+<body>
+    <ol>
+        <% for(var person of message) { %>
+            <li>
+                <a href="/CSPAdmin/<%= username %>/GetAllSubscriberSims/<%= person["PublicKey"] %>"><%= person["PublicKey"] %></a>
+                <br>
+            </li>
+        <% } %>
+    </ol>
+</body>
+</html>
+
