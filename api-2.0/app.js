@@ -79,8 +79,8 @@ app.post('/CreateCSP', async function (req, res) {
         args["Region"] = req.body.Region;
         args["Latitude"] = req.body.Latitude;
         args["Longitude"] = req.body.Longitude;
-        args["OverageRate"] = req.body.OverageRate;
-        args["RoamingRate"] =  req.body.RoamingRate;
+        args["OverageRate"] = parseFloat(req.body.OverageRate);
+        args["RoamingRate"] =  parseFloat(req.body.RoamingRate);
         args["Doc_type"] = "CSP"
         var password = req.body.password;
     
@@ -552,9 +552,9 @@ app.get('/user/:publicKey/simhistory' ,async function (req,res){
     try{
         let publicKey = req.params.publicKey; 
         console.log("Fetching the sim history of subscriber sim from blockchain using 'GetHistoryForAsset' Smart Contract");
-        let message = await query.query(publicKey,"GetHistoryForAsset",publicKey,"Org2");
+        let result = await query.query(publicKey,"GetHistoryForAsset",publicKey,"Org2");
         console.log("Fetching the sim history of subscriber sim is Successful.");
-        res.render('sim_history',{title:"User History",message});
+        res.render('sim_history',{title:"User History",result});
     }
     catch (error) {
         const response_payload = {
@@ -609,7 +609,8 @@ app.get('/user/:publicKey/callout' ,async function (req,res){
             res.render('call_end',{title:"Call End",publicKey});
         }
         else if(overageFlag === 'true' && allowOverage === 'false'){
-            res.render('overage',{title:"Overage",publicKey});
+            var url_new = `/user/${publicKey}/overage`
+            res.redirect(url_new);
         }        
         // res.render('display_all_services',{title:"History Data",message})
     }
@@ -624,11 +625,18 @@ app.get('/user/:publicKey/callout' ,async function (req,res){
     }
 });
 
+app.get('/user/:publicKey/overage' ,async function (req,res)
+{
+    let publicKey = req.params.publicKey;
+    res.render('overage',{title:"Overage",publicKey});
+});
+
 app.post('/user/:publicKey/overage' ,async function (req,res){
     try{
         let publicKey = req.params.publicKey;
-        let resp = req.body.response;
-        if(resp === 'yes'){
+        let resp = req.body.responce;
+        console.log(resp);
+        if(resp === "yes"){
             console.log("Set Overage the flag for this user using smartcontract.");
             await invoke.invokeTransaction("SetOverageFlag",publicKey,"true");
             console.log("Setting the Overageflag is done");
