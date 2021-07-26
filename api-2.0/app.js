@@ -231,7 +231,6 @@ app.get('/CSPAdmin/:username/info', async function (req, res) {
         let message = await query.query(username,"ReadCSPData",username,"Org1")
         console.log("Fetching the Data of CSP is Successful.");
         res.render("csp_info",{title:"CSP Info",message});
-        // res.send(result);
     }
     catch (error) {
         const response_payload = {
@@ -259,14 +258,12 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims', async function (req, res) {
         }
         res.send(response_payload)
     }
-    // res.render('number_queries',{title:"Get Data",username,result});
 });
 
 app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey', async function (req, res) {
     let username = req.params.username;
     let publicKey = req.params.publicKey;    
     res.render("csp_sim_index",{title:"Subscriber Sim",username,publicKey})
-    // res.render('display',{title:"Info",username,publicKey})
 });
 
 app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/info', async function (req, res) {
@@ -286,7 +283,6 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/info', async functi
         }
         res.send(response_payload)
     }
-    // res.render('display_all_services',{title:"Sim Data",message})
 });
 
 app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/history', async function (req, res) {
@@ -306,7 +302,6 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/history', async fun
         }
         res.send(response_payload)
     }    
-    // res.render('display_all_services',{title:"History Data",message})
 });
 
 app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/calldetails', async function (req, res) {
@@ -327,7 +322,6 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/calldetails', async
         }
         res.send(response_payload)
     }
-    // res.render('display_all_transactions',{title:"Transaction Data",message})
 });
 
 app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/movesim', async function (req, res) {
@@ -525,7 +519,6 @@ app.get('/user/:publicKey/info' ,async function (req,res){
         }
         res.send(response_payload)
     }
-    // res.render('display_all_services',{title:"Sim Data",message})
 });
 
 app.get('/user/:publicKey/calldetails' ,async function (req,res){
@@ -545,7 +538,6 @@ app.get('/user/:publicKey/calldetails' ,async function (req,res){
         }
         res.send(response_payload)
     }
-    // res.render('display_all_transactions',{title:"Transaction Data",message})
 });
 
 app.get('/user/:publicKey/simhistory' ,async function (req,res){
@@ -564,9 +556,6 @@ app.get('/user/:publicKey/simhistory' ,async function (req,res){
         }
         res.send(response_payload)
     }
-
-   
-    // res.render('display_all_services',{title:"History Data",message})
 });
 
 app.get('/user/:publicKey/callout' ,async function (req,res){
@@ -612,7 +601,6 @@ app.get('/user/:publicKey/callout' ,async function (req,res){
             var url_new = `/user/${publicKey}/overage`
             res.redirect(url_new);
         }        
-        // res.render('display_all_services',{title:"History Data",message})
     }
     catch(error)
     {
@@ -677,7 +665,6 @@ app.get('/user/:publicKey/callend' ,async function (req,res){
         }
         res.send(response_payload)
     }
-    // res.render('display_all_services',{title:"History Data",message})
 });
 
 

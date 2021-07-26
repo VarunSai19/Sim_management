@@ -2,12 +2,15 @@
 <html lang="en">
  <%- include('./partials/header.ejs') %> 
 <body>
-    <h3>CSP name is <%= message["Name"] %> </h3>
-    <h3>Region is <%= message["Region"] %></h3>
-    <h3>Latitude is <%= message["Latitude"] %></h3>
-    <h3>Longitude is <%= message["Longitude"] %></h3>
-    <h3>RoamingRate is <%= message["RoamingRate"] %></h3>
-    <h3>OverageRate is <%= message["OverageRate"] %></h3>
+    <header id="main-header"><h1>Roaming Usecase</h1></header>
+    <div class="center">
+        <h3>CSP name is <%= message["Name"] %> </h3>
+        <h3>Region is <%= message["Region"] %></h3>
+        <h3>Latitude is <%= message["Latitude"] %></h3>
+        <h3>Longitude is <%= message["Longitude"] %></h3>
+        <h3>RoamingRate is <%= message["RoamingRate"] %></h3>
+        <h3>OverageRate is <%= message["OverageRate"] %></h3>
+    </div>
 </body>
 </html>
 
