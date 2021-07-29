@@ -36,7 +36,6 @@ const query = async (args, fcn, username, org_name) => {
         let result;
         switch (fcn) {
             case "GetHistoryForAsset":
-            case "GetCarById":
             case "FindAllSubscriberSimsForCSP": 
                 console.log("=============")
                 result = await contract.evaluateTransaction('SmartContract:'+fcn, args);

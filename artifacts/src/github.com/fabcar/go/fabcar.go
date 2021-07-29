@@ -32,15 +32,6 @@ type CSPData struct{
 	RoamingRate float64  `json:"RoamingRate"`
 }
 
-type Car struct {
-	ID      string `json:"id"`
-	Make    string `json:"make"`
-	Model   string `json:"model"`
-	Color   string `json:"color"`
-	Owner   string `json:"owner"`
-	AddedAt uint64 `json:"addedAt"`
-}
-
 type SimData struct{
 	PublicKey  string `json:"PublicKey"`
 	Msisdn string `json:"Msisdn"`
@@ -205,7 +196,7 @@ func (s *SmartContract) UpdateCSP(ctx contractapi.TransactionContextInterface, D
 	if len(Data) == 0 {
 		return fmt.Errorf("Please pass the correct data")
 	}
-
+	
 	var newdata CSPData
 	err := json.Unmarshal([]byte(Data), &newdata)
 	if err != nil {
@@ -651,32 +642,32 @@ func (s *SmartContract) GetHistoryForAsset(ctx contractapi.TransactionContextInt
 	return string(buffer.Bytes()), nil
 }
 
-// func (s *SmartContract) GetSubmittingClientIdentity(ctx contractapi.TransactionContextInterface) (string, error) {
-// 	// x509::CN=telco-admin,OU=o 
-// 	b64ID, err := ctx.GetClientIdentity().GetID()
-// 	if err != nil {
-// 		return "", fmt.Errorf("Failed to read clientID: %v", err)
-// 	}
-// 	decodeID, err := base64.StdEncoding.DecodeString(b64ID)
-// 	if err != nil {
-// 		return "", fmt.Errorf("failed to base64 decode clientID: %v", err)
-// 	}
-// 	res := string(decodeID)
-// 	i:=0
-// 	id:=""
-// 	for ;i<len(res);i++{
-// 		if res[i] == '='{
-// 			break	
-// 		}
-// 	}
-// 	for i=i+1;i<len(res);i++{
-// 		if res[i] == ','{
-// 			break	
-// 		} 
-// 		id += string(res[i])
-// 	} 
-// 	return id, nil
-// }
+func (s *SmartContract) GetSubmittingClientIdentity(ctx contractapi.TransactionContextInterface) (string, error) {
+	// x509::CN=telco-admin,OU=o 
+	b64ID, err := ctx.GetClientIdentity().GetID()
+	if err != nil {
+		return "", fmt.Errorf("Failed to read clientID: %v", err)
+	}
+	decodeID, err := base64.StdEncoding.DecodeString(b64ID)
+	if err != nil {
+		return "", fmt.Errorf("failed to base64 decode clientID: %v", err)
+	}
+	res := string(decodeID)
+	i:=0
+	id:=""
+	for ;i<len(res);i++{
+		if res[i] == '='{
+			break	
+		}
+	}
+	for i=i+1;i<len(res);i++{
+		if res[i] == ','{
+			break	
+		} 
+		id += string(res[i])
+	} 
+	return id, nil
+}
 
 
 func (s *SmartContract) getQueryResultData(ctx contractapi.TransactionContextInterface, queryString string) ([]CSPData, error) {
@@ -737,96 +728,6 @@ func (s *SmartContract) FindAllSubscriberSimsForCSP(ctx contractapi.TransactionC
 	// var csp_name = "Airtel"
 	queryString := fmt.Sprintf(`{"selector":{"Doc_type":"SubscriberSim","$or":[{"HomeOperatorName":"%s"},{"RoamingPartnerName":"%s"}]}}`,csp_name,csp_name)
 	return s.getQueryResultSimData(ctx,queryString)
-}
-
-
-
-func (s *SmartContract) CreateCar(ctx contractapi.TransactionContextInterface, carData string) (string, error) {
-
-	if len(carData) == 0 {
-		return "", fmt.Errorf("Please pass the correct car data")
-	}
-
-	var car Car
-	err := json.Unmarshal([]byte(carData), &car)
-	if err != nil {
-		return "", fmt.Errorf("Failed while unmarshling car. %s", err.Error())
-	}
-
-	carAsBytes, err := json.Marshal(car)
-	if err != nil {
-		return "", fmt.Errorf("Failed while marshling car. %s", err.Error())
-	}
-
-	ctx.GetStub().SetEvent("CreateAsset", carAsBytes)
-
-	return ctx.GetStub().GetTxID(), ctx.GetStub().PutState(car.ID, carAsBytes)
-}
-
-
-//
-func (s *SmartContract) UpdateCarOwner(ctx contractapi.TransactionContextInterface, carID string, newOwner string) (string, error) {
-
-	if len(carID) == 0 {
-		return "", fmt.Errorf("Please pass the correct car id")
-	}
-
-	carAsBytes, err := ctx.GetStub().GetState(carID)
-
-	if err != nil {
-		return "", fmt.Errorf("Failed to get car data. %s", err.Error())
-	}
-
-	if carAsBytes == nil {
-		return "", fmt.Errorf("%s does not exist", carID)
-	}
-
-	car := new(Car)
-	_ = json.Unmarshal(carAsBytes, car)
-
-	car.Owner = newOwner
-
-	carAsBytes, err = json.Marshal(car)
-	if err != nil {
-		return "", fmt.Errorf("Failed while marshling car. %s", err.Error())
-	}
-
-	//  txId := ctx.GetStub().GetTxID()
-
-	return ctx.GetStub().GetTxID(), ctx.GetStub().PutState(car.ID, carAsBytes)
-
-}
-
-
-func (s *SmartContract) GetCarById(ctx contractapi.TransactionContextInterface, carID string) (*Car, error) {
-	if len(carID) == 0 {
-		return nil, fmt.Errorf("Please provide correct contract Id")
-		// return shim.Error("Incorrect number of arguments. Expecting 1")
-	}
-
-	carAsBytes, err := ctx.GetStub().GetState(carID)
-
-	if err != nil {
-		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
-	}
-
-	if carAsBytes == nil {
-		return nil, fmt.Errorf("%s does not exist", carID)
-	}
-
-	car := new(Car)
-	_ = json.Unmarshal(carAsBytes, car)
-
-	return car, nil
-
-}
-
-func (s *SmartContract) DeleteCarById(ctx contractapi.TransactionContextInterface, carID string) (string, error) {
-	if len(carID) == 0 {
-		return "", fmt.Errorf("Please provide correct contract Id")
-	}
-
-	return ctx.GetStub().GetTxID(), ctx.GetStub().DelState(carID)
 }
 
 
