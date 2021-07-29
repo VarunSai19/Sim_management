@@ -18,13 +18,9 @@ const port = process.env.PORT || constants.port;
 
 const helper = require('./app/helper')
 const invoke = require('./app/invoke')
-const qscc = require('./app/qscc')
 const query = require('./app/query')
 const PasswordHash = require('./models/schema_pass');
-const Customer_Data = require('./models/schema_data');
-const Aadhar_Data = require('./models/schema_aadhar');
 const { url } = require('inspector');
-const CustomerInfo = require('./models/schema_data');
 const channelName = "mychannel"
 const chaincodeName = "fabcar"
 

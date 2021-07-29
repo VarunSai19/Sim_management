@@ -24,7 +24,6 @@ const query = async (args, fcn, username, org_name) => {
 
         const connectOptions = {
             wallet, identity: username, discovery: { enabled: true, asLocalhost: true }
-            // eventHandlerOptions: EventStrategies.NONE
         }
 
         const gateway = new Gateway();

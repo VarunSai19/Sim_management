@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"encoding/base64"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 	"github.com/hyperledger/fabric/common/flogging"
 )
@@ -196,7 +197,7 @@ func (s *SmartContract) UpdateCSP(ctx contractapi.TransactionContextInterface, D
 	if len(Data) == 0 {
 		return fmt.Errorf("Please pass the correct data")
 	}
-	
+
 	var newdata CSPData
 	err := json.Unmarshal([]byte(Data), &newdata)
 	if err != nil {
