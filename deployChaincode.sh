@@ -224,7 +224,7 @@ chaincodeInvoke() {
         -C $CHANNEL_NAME -n ${CC_NAME}  \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA   \
-        -c '{"function": "CreateCSP","Args":["{\"Name\":\"test_csp\",\"Region\":\"test_region\",\"Latitude\":\"test_latitude\",\"Longitude\":\"test_longitude\", \"OverageRate\":\"1.8\",\"RoamingRate\":\"1.3\"}"]}'
+        -c '{"function": "CreateCSP","Args":["{\"Name\":\"test_csp\",\"Region\":\"test_region\",\"Latitude\":\"test_latitude\",\"Longitude\":\"test_longitude\", \"OverageRate\":1.8,\"RoamingRate\":1.3}"]}'
 
 }
 
