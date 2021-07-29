@@ -1,6 +1,7 @@
 #main-header {
     background-color: coral;
     color: cornsilk;
+    text-align: center;
 }
 
 .center {
@@ -25,13 +26,15 @@ a:hover {
 }
 
 form input[type="text"]{
-    padding: auto;
-    width: 60%;
+    padding:auto;
+    margin-top: 5px;
+    width: 13%;
 }
 
 form input[type="password"]{
-    padding: auto;
-    width: 60%;
+    padding:auto;
+    margin-top: 5px;
+    width: 13%;
 }
 
 form input[type="submit"]{
@@ -39,6 +42,7 @@ form input[type="submit"]{
     color: cornsilk;
     padding: auto;
     border: none;
+    font: normal 16px Arial,Helvetica,sans-serif;
 }
 
 li {
