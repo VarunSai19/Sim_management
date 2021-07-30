@@ -697,7 +697,6 @@ func (s *SmartContract) getQueryResultData(ctx contractapi.TransactionContextInt
 }
 
 func (s *SmartContract) getQueryResultSimData(ctx contractapi.TransactionContextInterface, queryString string) ([]SimData, error) {
-
 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
 		return nil, err

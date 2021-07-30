@@ -104,10 +104,22 @@ app.post('/CreateCSP', async function (req, res) {
         }
         console.log("Registering User to Block Chain Wallet...");
         let response = await helper.Register(args["Name"],"CSP");
+        if(response["message"] === "error"){
+            var err_str = response["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log(response);
         console.log("Registering User is done...");
         console.log("Invoking the CreateCSP smartcontract...");
         let resp = await invoke.invokeTransaction("CreateCSP",args["Name"],args)
+        if(resp["message"] === "error"){            
+            var err_str = resp["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log(resp);
         console.log("CSP is created inside the blockchain..");
 
@@ -140,6 +152,7 @@ app.post('/CreateCSP', async function (req, res) {
             errorData: error.message
         }
         res.send(response_payload)
+        return;
     }
 });
 
@@ -153,7 +166,13 @@ app.post('/CSPlogin', async function (req, res) {
     try{
         var username = req.body.Name;
         console.log("Checking If the user is present in Blockchain Wallet.");
-        const user_present = await helper.isUserRegistered(username,"Org1")
+        const user_present = await helper.isUserRegistered(username,"Org1");
+        if(user_present["message"] === "error"){
+            var err_str = user_present["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         if(!user_present) 
         {
             console.log(`An identity for the user ${username} not exists`);
@@ -161,7 +180,7 @@ app.post('/CSPlogin', async function (req, res) {
                 success: false,
                 message: username + ' was not enrolled',
             };
-            return response
+            return response;
         }
         console.log("User is Present in Blockchain Wallet.");
         var password = req.body.password;
@@ -201,6 +220,7 @@ app.post('/CSPlogin', async function (req, res) {
                         error: "Invalid Credentials"
                     }
                     res.send(response_payload)
+                    return;
                 }
             }
         });
@@ -212,6 +232,7 @@ app.post('/CSPlogin', async function (req, res) {
             errorData: error.message
         }
         res.send(response_payload)
+        return;
     }
 });
 
@@ -225,6 +246,12 @@ app.get('/CSPAdmin/:username/info', async function (req, res) {
         let username = req.params.username;
         console.log("Fetching the Data of CSP from blockchain using ReadCSPData Smart Contract");
         let message = await query.query(username,"ReadCSPData",username,"Org1")
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Fetching the Data of CSP is Successful.");
         res.render("csp_info",{title:"CSP Info",message});
     }
@@ -243,6 +270,12 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims', async function (req, res) {
         let username = req.params.username;
         console.log("Fetching the all subscriber sims belonging to that CSP from blockchain using smartcontract.");
         let message = await query.query(username,"FindAllSubscriberSimsForCSP",username,"Org1");
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Fetching the Sim Data for a CSP is Successful.");
         res.render("csp_sim_list",{title:"CSP Subscriber sims",username,message});
     }
@@ -268,6 +301,12 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/info', async functi
         let publicKey = req.params.publicKey; 
         console.log("Fetching the info of a subscriber sims belonging to that CSP from blockchain using smartcontract.");
         let message = await query.query(publicKey,"ReadSimData",publicKey,"Org2");
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Fetching the Sim Data of a CSP is Successful.");
         res.render("sim_info",{title:"Subscriber Sim Info",message});
     }
@@ -287,6 +326,12 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/history', async fun
         let publicKey = req.params.publicKey; 
         console.log("Fetching the history of a subscriber sims belonging to that CSP from blockchain using smartcontract.");
         let result = await query.query(publicKey,"GetHistoryForAsset",publicKey,"Org2");
+        if(result["message"] === "error"){
+            var err_str = result["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Fetching the Sim History of a particular sim is Successful.");
         res.render("sim_history",{title:"Subscriber Sim History",result});
     }
@@ -306,6 +351,12 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/calldetails', async
         let publicKey = req.params.publicKey; 
         console.log("Fetching the CallDetails of a subscriber sims belonging to that CSP from blockchain using smartcontract.");
         let message = await query.query(publicKey,"ReadSimData",publicKey,"Org2");
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Fetching the Sim CallDetails of a particular sim is Successful.");
         message = message["CallDetails"];
         res.render("call_details",{title:"Subscriber Call Details",message});
@@ -331,21 +382,46 @@ app.post('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/movesim', async fu
         let username = req.params.username;
         let publicKey = req.params.publicKey; 
         let new_loc = req.body.location;
+        let message;
         console.log(username);
         console.log(publicKey);
         console.log(new_loc);
         console.log(`Moving the sim to ${new_loc} using the smartcontract..`);
-        await invoke.invokeTransaction("MoveSim",publicKey,new_loc)
+        message = await invoke.invokeTransaction("MoveSim",publicKey,new_loc);
+        if(message["message"] === "error"){
+            var err_str = operator["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Changing the location of the sim is done");
         console.log("Now we are finding which CSP are there in the new Location using 'Discovery' smart contract");
         let operator = await invoke.invokeTransaction("Discovery",publicKey);
+        if(operator["message"] === "error"){
+            var err_str = operator["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Discovery is completed..");
         console.log(`${operator} is the CSP in the new Location.`);
         console.log("Performing Authentication of Sim using 'Authentication' smartcontract." );
-        await invoke.invokeTransaction("Authentication",publicKey)
+        message = await invoke.invokeTransaction("Authentication",publicKey)
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Authentication is Successful.");
         console.log("Updating the rate of the sim if we are in roaming location by invoking 'UpdateRate' smart contract");
-        await invoke.invokeTransaction("UpdateRate",publicKey,operator)
+        message = await invoke.invokeTransaction("UpdateRate",publicKey,operator)
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("UpdateRate is completed for the sim.");
 
         console.log("Move Sim is Completed");
@@ -374,6 +450,7 @@ app.post('/createSubscriberSim' ,async function (req,res){
     try{
         var password = req.body.password;
         var args = {};
+        let message;
         args["PublicKey"] = req.body.PublicKey;
         args["Address"] = req.body.Address;
         args["Msisdn"] = req.body.Msisdn;
@@ -392,16 +469,34 @@ app.post('/createSubscriberSim' ,async function (req,res){
 
         console.log("Registering User to Block Chain Wallet...");
         let response = await helper.Register(args["PublicKey"],"SubscriberSim");
+        if(response["message"] === "error"){
+            var err_str = response["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log(response);
         console.log("Registering User is done...");
 
         console.log("Invoking the 'CreateSubscriberSim' smartcontract...");
-        let message = await invoke.invokeTransaction("CreateSubscriberSim",args["PublicKey"],args);
+        message = await invoke.invokeTransaction("CreateSubscriberSim",args["PublicKey"],args);
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log(message);
         console.log("SubscriberSim is created inside the blockchain..");
 
         console.log("Performing Authentication of Sim using 'Authentication' smartcontract." );
-        await invoke.invokeTransaction("Authentication",args["PublicKey"])
+        message = await invoke.invokeTransaction("Authentication",args["PublicKey"]);
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Authentication is Successful.");
 
         console.log("Password Hash is saved in MongoDB.(Used while Login of any User.)");
@@ -417,6 +512,8 @@ app.post('/createSubscriberSim' ,async function (req,res){
             res.render("success_user",{title:"success",username:args["PublicKey"]}); 
         }).catch((err) => {
             console.log(err);
+            res.send(err);
+            return;
         });
     }
     catch(error)
@@ -439,6 +536,12 @@ app.post('/Userlogin', async function (req, res) {
         var username = req.body.PublicKey;
         console.log("Checking If the user is present in Blockchain Wallet.");
         const user_present = await helper.isUserRegistered(username,"Org2")
+        if(user_present["message"] === "error"){
+            var err_str = user_present["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         if(!user_present) 
         {
             console.log(`An identity for the user ${username} not exists`);
@@ -469,6 +572,8 @@ app.post('/Userlogin', async function (req, res) {
             if(err)
             {
                 console.log(err);
+                res.send(err);
+                return;
             }
             else{
                 if(data["password_hash"] === JSON.stringify(pass_hash["words"]))
@@ -478,7 +583,8 @@ app.post('/Userlogin', async function (req, res) {
                     res.redirect(url_new);
                 }
                 else{
-                    res.send({success: false, message: "Invalid Credentials" });
+                    res.send({success: false, message: "Invalid Credentials"});
+                    return;
                 }
             }
         });
@@ -504,6 +610,12 @@ app.get('/user/:publicKey/info' ,async function (req,res){
         console.log(publicKey);
         console.log("Fetching the Data of subscriber sim from blockchain using 'ReadSimData' Smart Contract");
         let message = await query.query(publicKey,"ReadSimData",publicKey,"Org2");
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Fetching the Data of subscriber sim is Successful.");
         res.render('sim_info',{title:"User",message});
     }
@@ -522,6 +634,12 @@ app.get('/user/:publicKey/calldetails' ,async function (req,res){
         let publicKey = req.params.publicKey; 
         console.log("Fetching the call details of subscriber sim from blockchain using 'ReadSimData' Smart Contract");
         let message = await query.query(publicKey,"ReadSimData",publicKey,"Org2");
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Fetching the call details of subscriber sim is Successful.");
         message = message["CallDetails"];
         res.render('call_details',{title:"User call details",message});
@@ -541,6 +659,12 @@ app.get('/user/:publicKey/simhistory' ,async function (req,res){
         let publicKey = req.params.publicKey; 
         console.log("Fetching the sim history of subscriber sim from blockchain using 'GetHistoryForAsset' Smart Contract");
         let result = await query.query(publicKey,"GetHistoryForAsset",publicKey,"Org2");
+        if(result["message"] === "error"){
+            var err_str = result["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Fetching the sim history of subscriber sim is Successful.");
         res.render('sim_history',{title:"User History",result});
     }
@@ -558,9 +682,16 @@ app.get('/user/:publicKey/callout' ,async function (req,res){
     try{
         let publicKey = req.params.publicKey; 
         let is_fraud
+        let message;
         console.log(publicKey);
         console.log("Checking if the sim is fraud or not using 'CheckForFraud' smartcontract");
         is_fraud = await query.query("","CheckForFraud",publicKey,"Org2");
+        if(is_fraud["message"] === "error"){
+            var err_str = is_fraud["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         if(is_fraud === "true"){
             res.send("The sim is fraud.")
         }
@@ -568,6 +699,12 @@ app.get('/user/:publicKey/callout' ,async function (req,res){
 
         console.log("Checking for the overage for this sim in blockchain using 'CheckForOverage' smartcontract");
         let result = await invoke.invokeTransaction("CheckForOverage",publicKey);
+        if(result["message"] === "error"){
+            var err_str = result["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Checking of Overage is completed.");
 
         let overageFlag = "";
@@ -585,13 +722,26 @@ app.get('/user/:publicKey/callout' ,async function (req,res){
 
         if(overageFlag === 'false' || (overageFlag === 'true' && allowOverage === 'true')) {
             console.log("Set Overage the flag for this user using smartcontract.");
-            await invoke.invokeTransaction("SetOverageFlag",publicKey,allowOverage);
+            message = await invoke.invokeTransaction("SetOverageFlag",publicKey,allowOverage);
+            if(message["message"] === "error"){
+                var err_str = message["error"].toString();
+                var error_msg = await helper.getErrorMessage(err_str);
+                res.render(error,{title:"Error Page",error_msg});
+                return;
+            }
             console.log("Setting the Overageflag is done");
 
             console.log("Initiating the call out of this sim using 'CallOut' smartcontract");
-            await invoke.invokeTransaction("CallOut",publicKey);
+            message = await invoke.invokeTransaction("CallOut",publicKey);
+            if(message["message"] === "error"){
+                var err_str = message["error"].toString();
+                var error_msg = await helper.getErrorMessage(err_str);
+                res.render(error,{title:"Error Page",error_msg});
+                return;
+            }
             console.log("Call has started.");
             res.render('call_end',{title:"Call End",publicKey});
+            return;
         }
         else if(overageFlag === 'true' && allowOverage === 'false'){
             var url_new = `/user/${publicKey}/overage`
@@ -619,10 +769,17 @@ app.post('/user/:publicKey/overage' ,async function (req,res){
     try{
         let publicKey = req.params.publicKey;
         let resp = req.body.responce;
+        let message;
         console.log(resp);
         if(resp === "yes"){
             console.log("Set Overage the flag for this user using smartcontract.");
-            await invoke.invokeTransaction("SetOverageFlag",publicKey,"true");
+            message = await invoke.invokeTransaction("SetOverageFlag",publicKey,"true");
+            if(message["message"] === "error"){
+                var err_str = message["error"].toString();
+                var error_msg = await helper.getErrorMessage(err_str);
+                res.render(error,{title:"Error Page",error_msg});
+                return;
+            }
             console.log("Setting the Overageflag is done");
         }
         var url_new = '/user/'+publicKey
@@ -641,13 +798,26 @@ app.post('/user/:publicKey/overage' ,async function (req,res){
 
 app.get('/user/:publicKey/callend' ,async function (req,res){
     try{
+        let message;
         let publicKey = req.params.publicKey; 
         console.log("Call End is initiated by 'CallEnd' smartcontract.");
-        await invoke.invokeTransaction("CallEnd",publicKey)
+        message = await invoke.invokeTransaction("CallEnd",publicKey);
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("Call is ended");
 
         console.log("Payment of the call is calculated using 'CallPay' smartcontract");
-        await invoke.invokeTransaction("CallPay",publicKey)
+        message = await invoke.invokeTransaction("CallPay",publicKey);
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         console.log("payment of the call is stored in the blockchain ledger.");
 
         var url_new = '/user/'+publicKey
@@ -668,12 +838,17 @@ app.get('/admin/:username/GetIdentity', async function (req, res) {
     try{
         let username = req.params.username
         let message = await query.query(null, "GetSubmittingClientIdentity",username,"Org1");
+        if(message["message"] === "error"){
+            var err_str = message["error"].toString();
+            var error_msg = await helper.getErrorMessage(err_str);
+            res.render(error,{title:"Error Page",error_msg});
+            return;
+        }
         const response_payload = {
             result: message,
             error: null,
             errorData: null
         }
-
         res.send(response_payload);
     }
     catch (error) {

@@ -6,7 +6,8 @@ const FabricCAServices = require('fabric-ca-client');
 const fs = require('fs');
 var SHA256 = require("crypto-js/sha256");
 const util = require('util');
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const { response } = require('express');
 const channelName = "mychannel"
 const chaincodeName = "fabcar"
 
@@ -125,9 +126,14 @@ const enrollAdmin = async (org, ccp) => {
 
         await wallet.put('admin', x509Identity);
         console.log('Successfully enrolled admin user "admin" and imported it into the wallet');
-        return
+        return;
     } catch (error) {
         console.error(`Failed to enroll admin user "admin": ${error}`);
+        let response = {
+            message:"error",
+            error:error
+        }
+        return response;
     }
 }
 
@@ -147,6 +153,11 @@ const isUserRegistered = async (username, userOrg) => {
     }
     catch (error) {
         console.error(`Failed to validate": ${error}`);
+        let response = {
+            message:"error",
+            error:error
+        }
+        return response;
     }
 }
 
@@ -163,8 +174,8 @@ const Register = async (username,usertype) => {
     if (userIdentity) {
         console.log(`An identity for the user ${username} already exists in the wallet`);
         var response = {
-            success: true,
-            message: username + ' enrolled Successfully',
+            error: username + ' is already enrolled.',
+            message: "error",
         };
         return response
     }
@@ -186,7 +197,11 @@ const Register = async (username,usertype) => {
         // Register the user, enroll the user, and import the new identity into the wallet.
         secret = await ca.register({ affiliation: await getAffiliation(userOrg), enrollmentID: username, role: 'client', attrs: [{ name:"usertype", value: usertype, ecert: true }] }, adminUser);
     } catch (error) {
-        return error.message
+        var responce = {
+            message:"error",
+            error:error.message
+        }
+        return responce;
     }
 
     const enrollment = await ca.enroll({ enrollmentID: username, enrollmentSecret: secret, attr_reqs: [{ name: "usertype", optional: false }] });
@@ -211,10 +226,43 @@ const Register = async (username,usertype) => {
     return response
 }
 
+const getErrorMessage = async (err_str) => {
+    var idx1 = err_str.indexOf("peer=peer0.org1");
+    var idx2 = err_str.indexOf("peer=peer0.org2");
+    var idx3 = err_str.indexOf("peer=peer0.org3");
+    var start;
+    var end;
+    if(idx1 === -1){
+        start = idx2 > idx3 ? idx3 : idx2;
+        end = idx2 < idx3 ? idx3 : idx2;
+    }
+    else if(idx2 === -1){
+        start = idx1 > idx3 ? idx3 : idx1;
+        end = idx1 < idx3 ? idx3 : idx1;
+    }
+    else if(idx3 === -1){
+        start = idx2 > idx1 ? idx1 : idx2;
+        end = idx2 < idx1 ? idx1 : idx2;
+    }
+    else{
+        start = idx2 > idx1 ? idx1 : idx2;
+        end = idx2 < idx1 ? idx1 : idx2;
+    }
+    var substr = err_str.substring(start,end);
+    var idx = substr.indexOf("message") + 8;
+    var error_msg = "";
+    for(;idx<substr.length;idx++){
+        error_msg += substr[idx]
+    }
+    console.log(error_msg);
+    return error_msg;
+}
+
 module.exports = {
     getCCP: getCCP,
     getWalletPath: getWalletPath,
     isUserRegistered: isUserRegistered,
     Register:Register,
-    getOrg:getOrg
+    getOrg:getOrg,
+    getErrorMessage:getErrorMessage
 }

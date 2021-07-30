@@ -61,11 +61,14 @@ const query = async (args, fcn, username, org_name) => {
         console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
 
         result = JSON.parse(result.toString());
-        return result
+        return result;
     } catch (error) {
         console.error(`Failed to evaluate transaction: ${error}`);
-        return error.message
-
+        var responce = {
+            message:"error",
+            error:error.message
+        }
+        return responce;
     }
 }
 

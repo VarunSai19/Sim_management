@@ -44,10 +44,10 @@ const invokeTransaction = async (fcn,username,args) => {
         const network = await gateway.getNetwork(channelName);
         const contract = network.getContract(chaincodeName);
 
-        let result;
-        let err;
-        let message;
-        let response;
+        var result;
+        var err;
+        var message;
+        var response;
 
         switch (fcn) {
             case "UpdateCSP":
@@ -57,7 +57,8 @@ const invokeTransaction = async (fcn,username,args) => {
                 console.log(`User name is ${username}`)
                 console.log(JSON.stringify(args));
                 result = await contract.submitTransaction('SmartContract:'+fcn, JSON.stringify(args));
-                result = {txid: result.toString()}
+                result = result.toString();
+                console.log(result);
                 break;
         
             case "DeleteCSP":
@@ -66,14 +67,14 @@ const invokeTransaction = async (fcn,username,args) => {
             case "CallPay":
                 console.log(`User name is ${username}`)
                 await contract.submitTransaction('SmartContract:'+fcn,username);
-                return;
+                break;
 
             case "CallOut":
             case "CallEnd":
                 console.log(`User name is ${username}`)
                 var time = Math.floor(Date.now()/1000)
                 await contract.submitTransaction('SmartContract:'+fcn,username,time);
-                return;
+                break;
 
             case "CheckForOverage":
                 console.log(`User name is ${username}`)
@@ -93,20 +94,23 @@ const invokeTransaction = async (fcn,username,args) => {
             case "SetOverageFlag":
                 console.log(`User name is ${username}`)
                 await contract.submitTransaction('SmartContract:'+fcn,username,args);
-                return;
+                break;
 
             default:
                 break;
         }
         await gateway.disconnect();
         response = {
-            message: message,
-            result
+            message: "success",
+            txid: result
         }
         return response;
     } catch (error) {
-        console.log(`Getting error: ${error}`)
-        return error.message
+        response = {
+            message: "error",
+            error: error.message
+        }
+        return response
     }
 }
 
