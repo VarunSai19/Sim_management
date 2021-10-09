@@ -238,7 +238,7 @@ app.post('/CSPlogin', async function (req, res) {
 
 app.get('/CSPAdmin/:username',async function(req,res){
     var username = req.params.username;
-    res.render('CSP_admin_page',{title:"CSP Admin",username})
+    res.render('CSP_admin_page',{title:"CSP Admin",username = username})
 });
 
 app.get('/CSPAdmin/:username/info', async function (req, res) {
@@ -308,7 +308,7 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/info', async functi
             return;
         }
         console.log("Fetching the Sim Data of a CSP is Successful.");
-        res.render("sim_info",{title:"Subscriber Sim Info",message});
+        res.render("csp_sim_info",{title:"Subscriber Sim Info",message});
     }
     catch (error) {
         const response_payload = {
@@ -333,7 +333,7 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/history', async fun
             return;
         }
         console.log("Fetching the Sim History of a particular sim is Successful.");
-        res.render("sim_history",{title:"Subscriber Sim History",result});
+        res.render("csp_sim_history",{title:"Subscriber Sim History",result});
     }
     catch (error) {
         const response_payload = {
@@ -359,7 +359,7 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/calldetails', async
         }
         console.log("Fetching the Sim CallDetails of a particular sim is Successful.");
         message = message["CallDetails"];
-        res.render("call_details",{title:"Subscriber Call Details",message});
+        res.render("csp_call_details",{title:"Subscriber Call Details",message});
     }
     catch (error) {
         const response_payload = {
