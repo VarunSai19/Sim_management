@@ -2,6 +2,8 @@
 <html lang="en">
  <%- include('./partials/header.ejs') %> 
 <body>
+    <header id="main-header"><h1>Roaming Usecase</h1></header>
+    <a href="/"><input type="button" value="Home" class="home-btn"></a>
     <ol>
         <% for(var service of message) { %>
             <li>
@@ -15,6 +17,7 @@
             </li>
         <% } %>
     </ol>
+    <%- include('./partials/footer.ejs')%>
 </body>
 </html>
 

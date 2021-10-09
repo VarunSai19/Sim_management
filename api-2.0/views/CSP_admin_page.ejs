@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
   <%- include('./partials/header.ejs') %> 
-
 <body>
   <header id="main-header"><h1>Roaming Usecase</h1></header>
+  <a href="/"><input type="button" value="Home" class="home-btn"></a>
   <ul class="center">
     <li><a href="/CSPAdmin/<%= username%>/info">CSP Info</a></li>
     <li><a href="/CSPAdmin/<%= username%>/GetAllSubscriberSims">Get All subscriber Sims</a></li>
   </ul>
+  <%- include('./partials/footer.ejs')%>
 </body>
 </html>

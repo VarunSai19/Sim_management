@@ -3,37 +3,40 @@
     <%- include('./partials/header.ejs')%>
 <body>
   <header id="main-header"><h1>Roaming Usecase</h1></header>
+  <a href="/"><input type="button" value="Home" class="home-btn"></a>
   <div class="center">
     <h2>CSP Details</h2>
     <form method="POST">
       <label for="name">Name:</label><br>
-      <input type="text" id="name" name="Name"><br>
+      <input type="text" id="name" name="Name" autocomplete="off"><br>
       <br>
       <label for="region">Region:</label><br>
-        <input type="text" id="region" name="Region"><br>
+        <input type="text" id="region" name="Region" autocomplete="off"><br>
       <br>
       
-      <label for="latitude">latitude:</label><br>
-        <input type="text" id="latitude" name="Latitude"><br>
+      <label for="latitude">Latitude:</label><br>
+        <input type="text" id="latitude" name="Latitude" autocomplete="off"><br>
       <br>
 
-      <label for="longitude">longitude:</label><br>
-        <input type="text" id="longitude" name="Longitude"><br>
+      <label for="longitude">Longitude:</label><br>
+        <input type="text" id="longitude" name="Longitude" autocomplete="off"><br>
       <br>
 
-      <label for="overage">overageRate:</label><br>
+      <label for="overage">OverageRate:</label><br>
         <input type="number" id="overage" name="OverageRate" step="0.01"><br>
       <br>
 
-      <label for="roaming">roamingRate:</label><br>
+      <label for="roaming">RoamingRate:</label><br>
         <input type="number" id="roaming" name="RoamingRate" step="0.01"><br>
       <br>
 
-      <label for="password">password:</label><br>
+      <label for="password">Password:</label><br>
         <input type="password" id="password" name="password"><br>
       <br>
       <input type="submit" value="Submit">
     </form> 
   </div>
+  
+  <%- include('./partials/footer.ejs')%>
 </body>
 </html>
