@@ -238,7 +238,7 @@ app.post('/CSPlogin', async function (req, res) {
 
 app.get('/CSPAdmin/:username',async function(req,res){
     var username = req.params.username;
-    res.render('CSP_admin_page',{title:"CSP Admin",username = username})
+    res.render('CSP_admin_page',{title:"CSP Admin",username})
 });
 
 app.get('/CSPAdmin/:username/info', async function (req, res) {
