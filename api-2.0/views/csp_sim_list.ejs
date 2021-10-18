@@ -6,7 +6,7 @@
     <ol>
         <% for(var person of message) { %>
             <li>
-                <a href="/CSPAdmin/<%= username %>/GetAllSubscriberSims/<%= person["PublicKey"] %>"><%= person["PublicKey"] %></a>
+                <div><a href="/CSPAdmin/<%= username %>/GetAllSubscriberSims/<%= person["PublicKey"] %>"><%= person["PublicKey"] %></a></div>
                 <br>
             </li>
         <% } %>

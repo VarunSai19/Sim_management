@@ -16,6 +16,11 @@ body{
     text-align: center;
 }
 
+h3{
+    color: rgb(241, 216, 209);
+    font: normal 1.6em Arial,Helvetica,sans-serif;
+}
+
 h2{
     color:rgb(167, 33, 67);
     font: normal 2em Arial,Helvetica,sans-serif;
@@ -28,7 +33,7 @@ a{
     text-decoration: none;
 }
 
-div > a:hover {
+div > a:hover, li>a:hover {
     color: rgb(209, 28, 83);
     font-size: 1.6em;
 }
@@ -58,10 +63,15 @@ li {
     color: rgb(241, 216, 209);
     font: normal 16px Arial,Helvetica,sans-serif;
     padding-bottom: 4px;
+    list-style-type:none;
 }
 
 .home-btn{
     position: absolute;
     top: 2.6%;
     right: 2.3%;
+}
+
+.history{
+    font: normal 1.3em Arial,Helvetica,sans-serif;
 }

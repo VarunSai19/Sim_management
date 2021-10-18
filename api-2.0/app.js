@@ -107,7 +107,11 @@ app.post('/CreateCSP', async function (req, res) {
         if(response["message"] === "error"){
             var err_str = response["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log(response);
@@ -117,7 +121,11 @@ app.post('/CreateCSP', async function (req, res) {
         if(resp["message"] === "error"){            
             var err_str = resp["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log(resp);
@@ -170,7 +178,11 @@ app.post('/CSPlogin', async function (req, res) {
         if(user_present["message"] === "error"){
             var err_str = user_present["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         if(!user_present) 
@@ -249,7 +261,11 @@ app.get('/CSPAdmin/:username/info', async function (req, res) {
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Fetching the Data of CSP is Successful.");
@@ -273,7 +289,11 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims', async function (req, res) {
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Fetching the Sim Data for a CSP is Successful.");
@@ -304,7 +324,11 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/info', async functi
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Fetching the Sim Data of a CSP is Successful.");
@@ -329,7 +353,11 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/history', async fun
         if(result["message"] === "error"){
             var err_str = result["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Fetching the Sim History of a particular sim is Successful.");
@@ -354,7 +382,11 @@ app.get('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/calldetails', async
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Fetching the Sim CallDetails of a particular sim is Successful.");
@@ -391,7 +423,11 @@ app.post('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/movesim', async fu
         if(message["message"] === "error"){
             var err_str = operator["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Changing the location of the sim is done");
@@ -400,7 +436,11 @@ app.post('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/movesim', async fu
         if(operator["message"] === "error"){
             var err_str = operator["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Discovery is completed..");
@@ -410,7 +450,11 @@ app.post('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/movesim', async fu
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Authentication is Successful.");
@@ -419,14 +463,18 @@ app.post('/CSPAdmin/:username/GetAllSubscriberSims/:publicKey/movesim', async fu
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("UpdateRate is completed for the sim.");
 
         console.log("Move Sim is Completed");
 
-        var url_resp = `/CSPAdmin/${username}/GetAllSubscriberSims/${publicKey}/`
+        var url_resp = `/CSPAdmin/${username}/`
         res.redirect(url_resp)
     }
     catch(error)
@@ -472,7 +520,11 @@ app.post('/createSubscriberSim' ,async function (req,res){
         if(response["message"] === "error"){
             var err_str = response["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log(response);
@@ -483,7 +535,11 @@ app.post('/createSubscriberSim' ,async function (req,res){
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log(message);
@@ -494,7 +550,11 @@ app.post('/createSubscriberSim' ,async function (req,res){
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Authentication is Successful.");
@@ -539,7 +599,11 @@ app.post('/Userlogin', async function (req, res) {
         if(user_present["message"] === "error"){
             var err_str = user_present["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         if(!user_present) 
@@ -613,7 +677,11 @@ app.get('/user/:publicKey/info' ,async function (req,res){
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Fetching the Data of subscriber sim is Successful.");
@@ -637,7 +705,11 @@ app.get('/user/:publicKey/calldetails' ,async function (req,res){
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Fetching the call details of subscriber sim is Successful.");
@@ -662,7 +734,11 @@ app.get('/user/:publicKey/simhistory' ,async function (req,res){
         if(result["message"] === "error"){
             var err_str = result["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Fetching the sim history of subscriber sim is Successful.");
@@ -689,7 +765,11 @@ app.get('/user/:publicKey/callout' ,async function (req,res){
         if(is_fraud["message"] === "error"){
             var err_str = is_fraud["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         if(is_fraud === "true"){
@@ -702,7 +782,11 @@ app.get('/user/:publicKey/callout' ,async function (req,res){
         if(result["message"] === "error"){
             var err_str = result["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Checking of Overage is completed.");
@@ -726,7 +810,11 @@ app.get('/user/:publicKey/callout' ,async function (req,res){
             if(message["message"] === "error"){
                 var err_str = message["error"].toString();
                 var error_msg = await helper.getErrorMessage(err_str);
-                res.render(error,{title:"Error Page",error_msg});
+                const response_payload = {
+                    result: null,
+                    error: error_msg
+                }
+                res.send(response_payload);
                 return;
             }
             console.log("Setting the Overageflag is done");
@@ -736,7 +824,11 @@ app.get('/user/:publicKey/callout' ,async function (req,res){
             if(message["message"] === "error"){
                 var err_str = message["error"].toString();
                 var error_msg = await helper.getErrorMessage(err_str);
-                res.render(error,{title:"Error Page",error_msg});
+                const response_payload = {
+                    result: null,
+                    error: error_msg
+                }
+                res.send(response_payload);
                 return;
             }
             console.log("Call has started.");
@@ -777,7 +869,11 @@ app.post('/user/:publicKey/overage' ,async function (req,res){
             if(message["message"] === "error"){
                 var err_str = message["error"].toString();
                 var error_msg = await helper.getErrorMessage(err_str);
-                res.render(error,{title:"Error Page",error_msg});
+                const response_payload = {
+                    result: null,
+                    error: error_msg
+                }
+                res.send(response_payload);
                 return;
             }
             console.log("Setting the Overageflag is done");
@@ -805,7 +901,11 @@ app.get('/user/:publicKey/callend' ,async function (req,res){
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("Call is ended");
@@ -815,7 +915,11 @@ app.get('/user/:publicKey/callend' ,async function (req,res){
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         console.log("payment of the call is stored in the blockchain ledger.");
@@ -841,7 +945,11 @@ app.get('/admin/:username/GetIdentity', async function (req, res) {
         if(message["message"] === "error"){
             var err_str = message["error"].toString();
             var error_msg = await helper.getErrorMessage(err_str);
-            res.render(error,{title:"Error Page",error_msg});
+            const response_payload = {
+                result: null,
+                error: error_msg
+            }
+            res.send(response_payload);
             return;
         }
         const response_payload = {

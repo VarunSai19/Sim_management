@@ -6,7 +6,7 @@
     <div>
         <ol>
             <% for(var message of result) { %>
-                <li>
+                <li class="history">
                     <h3>Public Key is <%= message["Value"]["PublicKey"] %> </h3>
                     <h3>Msisdn is <%= message["Value"]["Msisdn"] %></h3>
                     <h3>Address is <%= message["Value"]["Address"] %></h3>
@@ -25,6 +25,7 @@
                     <h3>Transaction Id: <%= message["TxId"] %> </h3>
                     <h3>Timestamp : <%= message["Timestamp"] %> </h3>
                 </li>
+                <br><br><br>
             <% } %>
         </ol>
     </div>
